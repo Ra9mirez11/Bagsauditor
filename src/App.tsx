@@ -22,8 +22,6 @@ import {
   Tooltip, 
   ResponsiveContainer 
 } from 'recharts';
-import { simulateClaudeAudit } from './services/claude';
-
 // Mock types for Bags API
 interface TokenAudit {
   name: string;
