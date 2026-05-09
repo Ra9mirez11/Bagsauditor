@@ -24,6 +24,7 @@ export default async function handler(
     // 1. Get Bags Data
     const bagsService = new BagsService(process.env.BAGS_API_KEY || 'DEMO');
     const tokenData = await bagsService.auditToken(token_mint);
+    const claimEvents = await bagsService.getClaimEvents(token_mint);
 
     // 2. Call Claude AI
     const message = await anthropic.messages.create({
@@ -48,6 +49,7 @@ export default async function handler(
 
     return response.status(200).json({
       ...tokenData,
+      claimEvents,
       vulnerabilities: aiAnalysis.insights || [],
       recommendation: aiAnalysis.recommendation || 'UNKNOWN'
     });

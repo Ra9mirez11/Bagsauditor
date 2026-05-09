@@ -46,6 +46,28 @@ export class BagsService {
     };
   }
 
+  async getClaimEvents(mint: string) {
+    try {
+      const pubkey = new PublicKey(mint);
+      // Fetch last 100 claim events
+      const events = await this.sdk.state.getTokenClaimEvents(pubkey, {
+        mode: "offset",
+        limit: 100,
+        offset: 0,
+      });
+      
+      return events.map(e => ({
+        amount: Number(e.amount) / 1e9,
+        timestamp: new Date(e.timestamp).getTime(),
+        wallet: e.wallet,
+        isCreator: e.isCreator
+      }));
+    } catch (error) {
+      console.error("Error fetching claim events:", error);
+      return [];
+    }
+  }
+
   private calculateSafetyScore(data: any) {
     let score = 50; // Base score
     if (data.creators.length > 0) score += 20;

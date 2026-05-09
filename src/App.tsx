@@ -10,6 +10,15 @@ import {
   CodeXml
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { 
+  AreaChart, 
+  Area, 
+  XAxis, 
+  YAxis, 
+  CartesianGrid, 
+  Tooltip, 
+  ResponsiveContainer 
+} from 'recharts';
 import { BagsService } from './services/bags';
 import { simulateClaudeAudit } from './services/claude';
 
@@ -26,6 +35,7 @@ interface TokenAudit {
   vulnerabilities: string[];
   ownerStatus: string;
   liquidityStatus: string;
+  claimEvents?: any[];
 }
 
 const App = () => {
@@ -48,37 +58,45 @@ const App = () => {
 
       if (response.ok) {
         const data = await response.json();
+          setAuditResult({
+            name: data.name || (searchQuery.length > 15 ? 'SOLANA TOKEN' : searchQuery.toUpperCase()),
+            symbol: data.symbol || searchQuery.substring(0, 4).toUpperCase(),
+            safetyScore: data.safetyScore,
+            riskLevel: data.riskLevel,
+            vulnerabilities: data.vulnerabilities,
+            ownerStatus: 'Verified Standard',
+            liquidityStatus: `${(data.fees / 1e9).toFixed(2)} SOL Generated`,
+            claimEvents: data.claimEvents
+          });
+        } else {
+          throw new Error('Backend not available or failed');
+        }
+      } catch (error) {
+        console.warn("Backend failed, falling back to local simulation:", error);
+        // Fallback to local simulation
+        const data = await bagsService.auditToken(searchQuery);
+        const aiAnalysis = await simulateClaudeAudit(data);
+        
+        // Generate dummy events for simulation
+        const dummyEvents = Array.from({ length: 12 }).map((_, i) => ({
+          timestamp: Date.now() - (12 - i) * 24 * 60 * 60 * 1000,
+          amount: Math.random() * 5 + 1
+        }));
+
         setAuditResult({
-          name: data.name || (searchQuery.length > 15 ? 'SOLANA TOKEN' : searchQuery.toUpperCase()),
-          symbol: data.symbol || searchQuery.substring(0, 4).toUpperCase(),
+          name: searchQuery.length > 15 ? 'SOLANA TOKEN' : searchQuery.toUpperCase(),
+          symbol: searchQuery.substring(0, 4).toUpperCase(),
           safetyScore: data.safetyScore,
-          riskLevel: data.riskLevel,
-          vulnerabilities: data.vulnerabilities,
-          ownerStatus: 'Verified Standard',
-          liquidityStatus: `${(data.fees / 1e9).toFixed(2)} SOL Generated`
+          riskLevel: data.riskLevel as 'Low' | 'Medium' | 'High',
+          vulnerabilities: aiAnalysis.insights,
+          ownerStatus: 'Simulation Mode',
+          liquidityStatus: `${(data.fees / 1e9).toFixed(2)} SOL Generated`,
+          claimEvents: dummyEvents
         });
-      } else {
-        throw new Error('Backend not available or failed');
+      } finally {
+        setIsAuditing(false);
       }
-    } catch (error) {
-      console.warn("Backend failed, falling back to local simulation:", error);
-      // Fallback to local simulation
-      const data = await bagsService.auditToken(searchQuery);
-      const aiAnalysis = await simulateClaudeAudit(data);
-      
-      setAuditResult({
-        name: searchQuery.length > 15 ? 'SOLANA TOKEN' : searchQuery.toUpperCase(),
-        symbol: searchQuery.substring(0, 4).toUpperCase(),
-        safetyScore: data.safetyScore,
-        riskLevel: data.riskLevel as 'Low' | 'Medium' | 'High',
-        vulnerabilities: aiAnalysis.insights,
-        ownerStatus: 'Simulation Mode',
-        liquidityStatus: `${(data.fees / 1e9).toFixed(2)} SOL Generated`
-      });
-    } finally {
-      setIsAuditing(false);
-    }
-  };
+    };
 
   return (
     <div className="min-h-screen font-sans selection:bg-primary/30">
@@ -177,62 +195,101 @@ const App = () => {
           {/* Audit Results (Conditional) */}
           <AnimatePresence>
             {auditResult && (
-              <motion.div 
-                initial={{ opacity: 0, y: 40 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-20"
-              >
-                {/* Score Card */}
-                <div className="glass p-8 rounded-3xl flex flex-col items-center justify-center text-center relative overflow-hidden group">
-                  <div className="absolute inset-0 bg-success/5 opacity-0 group-hover:opacity-100 transition-opacity" />
-                  <div className="relative z-10">
-                    <div className="text-sm font-bold text-white/40 uppercase tracking-widest mb-4">Safety Score</div>
-                    <div className={`text-7xl font-bold ${auditResult.safetyScore > 80 ? 'text-success' : 'text-warning'}`}>
-                      {auditResult.safetyScore}
-                    </div>
+              <>
+                <motion.div initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                  <div className="glass p-8 rounded-3xl flex flex-col items-center justify-center text-center group">
+                    <div className="text-sm font-bold text-white/40 uppercase mb-4">Safety Score</div>
+                    <div className={`text-7xl font-bold ${auditResult.safetyScore > 80 ? 'text-success' : 'text-warning'}`}>{auditResult.safetyScore}</div>
                     <div className="text-sm font-medium mt-2 text-white/60">Verified by Claude-3.5</div>
                   </div>
-                </div>
+                  <div className="md:col-span-2 glass p-8 rounded-3xl">
+                    <div className="flex justify-between items-start mb-8">
+                      <div>
+                        <h3 className="text-2xl font-bold mb-1">{auditResult.name}</h3>
+                        <p className="text-primary font-mono text-sm">${auditResult.symbol}</p>
+                      </div>
+                      <div className="flex gap-2">
+                        <span className="px-3 py-1 rounded-full bg-success/10 border border-success/20 text-xs font-bold text-success uppercase">Secure</span>
+                        <span className="px-3 py-1 rounded-full bg-white/5 border border-white/10 text-xs font-bold text-white/60">BAGS V2</span>
+                      </div>
+                    </div>
+                    <div className="space-y-4">
+                      {auditResult.vulnerabilities.map((v, i) => (
+                        <div key={i} className="flex items-center gap-3 text-white/80">
+                          <CheckCircle2 className="w-5 h-5 text-success" />
+                          <span>{v}</span>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="mt-8 pt-8 border-t border-white/5 flex gap-8">
+                      <div>
+                        <div className="text-[10px] uppercase font-bold text-white/30 mb-1">Ownership</div>
+                        <div className="text-sm font-medium text-white/80">{auditResult.ownerStatus}</div>
+                      </div>
+                      <div>
+                        <div className="text-[10px] uppercase font-bold text-white/30 mb-1">Liquidity</div>
+                        <div className="text-sm font-medium text-white/80">{auditResult.liquidityStatus}</div>
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
 
-                {/* Details Card */}
-                <div className="md:col-span-2 glass p-8 rounded-3xl">
-                  <div className="flex justify-between items-start mb-8">
+                {/* Fee Visualization Chart */}
+                <motion.div 
+                  initial={{ opacity: 0, y: 40 }} 
+                  animate={{ opacity: 1, y: 0 }} 
+                  transition={{ delay: 0.1 }}
+                  className="glass p-8 rounded-3xl mb-20"
+                >
+                  <div className="flex items-center justify-between mb-8">
                     <div>
-                      <h3 className="text-2xl font-bold mb-1">{auditResult.name}</h3>
-                      <p className="text-primary font-mono text-sm">${auditResult.symbol}</p>
+                      <h4 className="text-xl font-bold">Fee Distribution Timeline</h4>
+                      <p className="text-white/40 text-sm">Visualizing the 1% creator fee distribution (SOL)</p>
                     </div>
                     <div className="flex gap-2">
-                      <span className="px-3 py-1 rounded-full bg-success/10 border border-success/20 text-xs font-bold text-success">
-                        SECURE
-                      </span>
-                      <span className="px-3 py-1 rounded-full bg-white/5 border border-white/10 text-xs font-bold text-white/60">
-                        BAGS V2
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="space-y-4">
-                    {auditResult.vulnerabilities.map((v, i) => (
-                      <div key={i} className="flex items-center gap-3 text-white/80">
-                        <CheckCircle2 className="w-5 h-5 text-success" />
-                        <span>{v}</span>
+                      <div className="flex items-center gap-2 text-xs font-bold text-white/40">
+                        <div className="w-3 h-3 rounded-full bg-primary/40" />
+                        <span>Claims</span>
                       </div>
-                    ))}
-                  </div>
-
-                  <div className="mt-8 pt-8 border-t border-white/5 flex gap-8">
-                    <div>
-                      <div className="text-[10px] uppercase font-bold text-white/30 tracking-widest mb-1">Ownership</div>
-                      <div className="text-sm font-medium text-white/80">{auditResult.ownerStatus}</div>
-                    </div>
-                    <div>
-                      <div className="text-[10px] uppercase font-bold text-white/30 tracking-widest mb-1">Liquidity</div>
-                      <div className="text-sm font-medium text-white/80">{auditResult.liquidityStatus}</div>
                     </div>
                   </div>
-                </div>
-              </motion.div>
+                  
+                  <div className="h-[300px] w-full">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <AreaChart data={auditResult.claimEvents}>
+                        <defs>
+                          <linearGradient id="colorAmount" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor="#22d3ee" stopOpacity={0.3}/>
+                            <stop offset="95%" stopColor="#22d3ee" stopOpacity={0}/>
+                          </linearGradient>
+                        </defs>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#ffffff05" vertical={false} />
+                        <XAxis 
+                          dataKey="timestamp" 
+                          hide 
+                        />
+                        <YAxis 
+                          stroke="#ffffff20" 
+                          fontSize={12} 
+                        />
+                        <Tooltip 
+                          contentStyle={{ backgroundColor: '#09090b', border: '1px solid #ffffff10', borderRadius: '12px' }}
+                          itemStyle={{ color: '#22d3ee' }}
+                          labelFormatter={(label) => new Date(label).toLocaleDateString()}
+                        />
+                        <Area 
+                          type="monotone" 
+                          dataKey="amount" 
+                          stroke="#22d3ee" 
+                          fillOpacity={1} 
+                          fill="url(#colorAmount)" 
+                          strokeWidth={3}
+                        />
+                      </AreaChart>
+                    </ResponsiveContainer>
+                  </div>
+                </motion.div>
+              </>
             )}
           </AnimatePresence>
 
