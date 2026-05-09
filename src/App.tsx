@@ -67,6 +67,36 @@ interface TokenAudit {
   claimEvents?: any[];
 }
 
+const Vortex = () => {
+  return (
+    <div className="fixed inset-0 -z-10 overflow-hidden bg-background">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(0,245,255,0.05),transparent_70%)]" />
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-[size:32px_32px]" />
+      {[...Array(15)].map((_, i) => (
+        <motion.div
+          key={i}
+          className="absolute w-1 h-1 bg-primary/10 rounded-full"
+          initial={{ 
+            x: Math.random() * 100 + "%", 
+            y: Math.random() * 100 + "%",
+            opacity: 0
+          }}
+          animate={{
+            y: [null, "-100%"],
+            opacity: [0, 1, 0],
+          }}
+          transition={{
+            duration: Math.random() * 20 + 10,
+            repeat: Infinity,
+            ease: "linear",
+            delay: Math.random() * 10
+          }}
+        />
+      ))}
+    </div>
+  );
+};
+
 const App = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [isAuditing, setIsAuditing] = useState(false);
@@ -87,7 +117,16 @@ const App = () => {
       const res = await fetch('/api/feed');
       if (res.ok) {
         const data = await res.json();
-        setFeed(data.slice(0, 10));
+        if (data && data.length > 0) {
+          setFeed(data.slice(0, 10));
+        } else {
+          // Fallback to trending tokens if feed is empty
+          setFeed([
+            { symbol: 'BAGS', name: 'Bags Official', status: 'LIVE', tokenMint: 'BAGS...' },
+            { symbol: 'SOL', name: 'Solana', status: 'ACTIVE', tokenMint: 'So11...' },
+            { symbol: 'SEND', name: 'Send It', status: 'TRENDING', tokenMint: 'SEND...' },
+          ]);
+        }
       }
     } catch (e) {
       console.warn("Feed fetch failed");
@@ -185,12 +224,7 @@ const App = () => {
 
   return (
     <div className="min-h-screen font-sans selection:bg-primary/30">
-      {/* Animated Background Mesh */}
-      <div className="fixed inset-0 -z-10 bg-background overflow-hidden">
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]" />
-        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-primary/10 blur-[120px] animate-pulse" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-secondary/10 blur-[120px] animate-pulse" style={{ animationDelay: '2s' }} />
-      </div>
+      <Vortex />
 
       {/* Navigation */}
       <nav className="fixed top-0 w-full z-50 glass border-b-white/5 px-6 py-4">
