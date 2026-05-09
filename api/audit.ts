@@ -3,7 +3,7 @@ import { OpenRouter } from "@openrouter/sdk";
 import { BagsService } from '../src/services/bags';
 
 const openrouter = new OpenRouter({
-  apiKey: process.env.OPENROUTER_API_KEY || '',
+  apiKey: process.env.ANTHROPIC_API_KEY || '',
 });
 
 export default async function handler(

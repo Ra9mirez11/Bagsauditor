@@ -2,7 +2,7 @@ import { VercelRequest, VercelResponse } from '@vercel/node';
 import { OpenRouter } from "@openrouter/sdk";
 
 const openrouter = new OpenRouter({
-  apiKey: process.env.OPENROUTER_API_KEY || '',
+  apiKey: process.env.ANTHROPIC_API_KEY || '',
 });
 
 export default async function handler(
