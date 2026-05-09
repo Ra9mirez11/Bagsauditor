@@ -1,0 +1,68 @@
+@import "tailwindcss";
+
+@theme {
+  --color-background: #050505;
+  --color-surface: #0A0A0A;
+  --color-primary: #00F5FF;
+  --color-secondary: #7000FF;
+  --color-accent: #FF00E5;
+  --color-success: #00FF94;
+  --color-warning: #FFB800;
+  --color-danger: #FF005C;
+  
+  --font-sans: "Inter", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+
+  --animate-glow-pulse: glow-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  --animate-float: float 6s ease-in-out infinite;
+
+  @keyframes glow-pulse {
+    0%, 100% { opacity: 1; filter: brightness(1); }
+    50% { opacity: 0.7; filter: brightness(1.5); }
+  }
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-20px); }
+  }
+}
+
+@layer base {
+  body {
+    @apply bg-background text-white selection:bg-primary/30;
+  }
+}
+
+@utility glass {
+  @apply bg-surface/60 backdrop-blur-xl border border-white/10;
+}
+
+@utility glass-hover {
+  @apply hover:bg-surface/80 hover:border-white/20 transition-all duration-300;
+}
+
+@utility glow-cyan {
+  box-shadow: 0 0 20px rgba(0, 245, 255, 0.15);
+}
+
+@utility glow-cyan-hover {
+  &:hover {
+    box-shadow: 0 0 30px rgba(0, 245, 255, 0.3);
+  }
+}
+
+@utility text-gradient {
+  @apply bg-clip-text text-transparent bg-gradient-to-r from-primary via-secondary to-accent;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-background;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-white/10 rounded-full hover:bg-white/20;
+}
