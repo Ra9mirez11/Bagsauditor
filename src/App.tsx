@@ -203,9 +203,9 @@ const App = () => {
         <Vortex
           backgroundColor="#000000"
           rangeY={800}
-          particleCount={300}
-          baseHue={200}
-          containerClassName="h-full w-full opacity-60"
+          particleCount={500}
+          baseHue={180}
+          containerClassName="h-full w-full"
         />
       </div>
 
