@@ -337,28 +337,90 @@ const App = () => {
                     </div>
                   </motion.div>
 
-                  {/* Fee Chart */}
-                  <motion.div initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} className="glass p-8 rounded-3xl mb-8">
-                    <div className="flex items-center justify-between mb-8">
-                      <h4 className="text-xl font-bold">Fee Distribution Timeline</h4>
-                      <p className="text-white/40 text-xs">Visualizing distributions (SOL)</p>
+                  {/* Fee Dashboard Section */}
+                  <motion.div initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} className="glass p-8 rounded-3xl mb-8 border border-white/5">
+                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
+                      <div>
+                        <h4 className="text-2xl font-bold">Fee Distribution Dashboard</h4>
+                        <p className="text-white/40 text-sm">On-chain transparency for the 1% creator fee</p>
+                      </div>
+                      <div className="flex gap-2 bg-white/5 p-1 rounded-xl border border-white/10">
+                        <span className="px-3 py-1 bg-primary/20 text-primary text-[10px] font-bold rounded-lg uppercase">Live Data</span>
+                        <span className="px-3 py-1 text-white/40 text-[10px] font-bold rounded-lg uppercase">Last 100 Events</span>
+                      </div>
                     </div>
-                    <div className="h-[250px] w-full">
+
+                    {/* Quick Stats Grid */}
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+                      <div className="p-4 rounded-2xl bg-white/5 border border-white/5 hover:border-primary/20 transition-all">
+                        <div className="text-[10px] text-white/40 uppercase font-bold mb-1">Total Claims</div>
+                        <div className="text-xl font-mono text-white">{(auditResult.claimEvents?.reduce((acc, curr) => acc + curr.amount, 0) || 0).toFixed(2)} SOL</div>
+                      </div>
+                      <div className="p-4 rounded-2xl bg-white/5 border border-white/5 hover:border-secondary/20 transition-all">
+                        <div className="text-[10px] text-white/40 uppercase font-bold mb-1">Community Share</div>
+                        <div className="text-xl font-mono text-secondary">{(auditResult.claimEvents?.filter(e => !e.isCreator).reduce((acc, curr) => acc + curr.amount, 0) || 0).toFixed(2)} SOL</div>
+                      </div>
+                      <div className="p-4 rounded-2xl bg-white/5 border border-white/5 hover:border-success/20 transition-all">
+                        <div className="text-[10px] text-white/40 uppercase font-bold mb-1">Avg Claim Size</div>
+                        <div className="text-xl font-mono text-success">{(auditResult.claimEvents?.length ? (auditResult.claimEvents.reduce((acc, curr) => acc + curr.amount, 0) / auditResult.claimEvents.length) : 0).toFixed(3)} SOL</div>
+                      </div>
+                      <div className="p-4 rounded-2xl bg-white/5 border border-white/5 hover:border-accent/20 transition-all">
+                        <div className="text-[10px] text-white/40 uppercase font-bold mb-1">Creator Payouts</div>
+                        <div className="text-xl font-mono text-accent">{(auditResult.claimEvents?.filter(e => e.isCreator).reduce((acc, curr) => acc + curr.amount, 0) || 0).toFixed(2)} SOL</div>
+                      </div>
+                    </div>
+                    
+                    <div className="h-[300px] w-full mt-4">
                       <ResponsiveContainer width="100%" height="100%">
                         <AreaChart data={auditResult.claimEvents}>
                           <defs>
                             <linearGradient id="colorAmount" x1="0" y1="0" x2="0" y2="1">
-                              <stop offset="5%" stopColor="#22d3ee" stopOpacity={0.3}/>
-                              <stop offset="95%" stopColor="#22d3ee" stopOpacity={0}/>
+                              <stop offset="5%" stopColor="#00F5FF" stopOpacity={0.3}/>
+                              <stop offset="95%" stopColor="#00F5FF" stopOpacity={0}/>
+                            </linearGradient>
+                            <linearGradient id="colorCreator" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="5%" stopColor="#7000FF" stopOpacity={0.3}/>
+                              <stop offset="95%" stopColor="#7000FF" stopOpacity={0}/>
                             </linearGradient>
                           </defs>
                           <CartesianGrid strokeDasharray="3 3" stroke="#ffffff05" vertical={false} />
-                          <XAxis dataKey="timestamp" hide />
-                          <YAxis stroke="#ffffff20" fontSize={10} />
-                          <Tooltip contentStyle={{ backgroundColor: '#09090b', border: '1px solid #ffffff10', borderRadius: '12px' }} />
-                          <Area type="monotone" dataKey="amount" stroke="#22d3ee" fill="url(#colorAmount)" strokeWidth={3} />
+                          <XAxis 
+                            dataKey="timestamp" 
+                            stroke="#ffffff20" 
+                            fontSize={10} 
+                            tickFormatter={(t) => new Date(t).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          />
+                          <YAxis stroke="#ffffff20" fontSize={10} tickFormatter={(v) => `${v}S`} />
+                          <Tooltip 
+                            contentStyle={{ backgroundColor: '#09090b', border: '1px solid #ffffff10', borderRadius: '16px', boxShadow: '0 10px 30px -10px rgba(0,0,0,0.5)' }}
+                            itemStyle={{ fontSize: '12px', fontWeight: 'bold' }}
+                            labelStyle={{ color: '#ffffff40', fontSize: '10px', marginBottom: '4px' }}
+                            labelFormatter={(label) => `Time: ${new Date(label).toLocaleString()}`}
+                          />
+                          <Area 
+                            name="Claim Amount"
+                            type="monotone" 
+                            dataKey="amount" 
+                            stroke="#00F5FF" 
+                            fill="url(#colorAmount)" 
+                            strokeWidth={3} 
+                            animationDuration={2000}
+                          />
                         </AreaChart>
                       </ResponsiveContainer>
+                    </div>
+                    <div className="mt-6 flex flex-wrap gap-4 items-center border-t border-white/5 pt-6">
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 rounded-full bg-primary" />
+                        <span className="text-[10px] text-white/60 font-bold uppercase tracking-widest">Community Claims</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 rounded-full bg-secondary" />
+                        <span className="text-[10px] text-white/60 font-bold uppercase tracking-widest">Creator Distribution</span>
+                      </div>
+                      <div className="ml-auto text-[10px] text-white/20 italic">
+                        * All values denominated in SOL. Data sourced directly from Bags State Program.
+                      </div>
                     </div>
                   </motion.div>
 
