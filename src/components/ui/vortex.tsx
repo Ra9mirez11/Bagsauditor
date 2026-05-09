@@ -17,6 +17,8 @@ interface VortexProps {
   backgroundColor?: string;
 }
  
+const noise3D = createNoise3D();
+
 export const Vortex = (props: VortexProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef(null);
@@ -39,8 +41,6 @@ export const Vortex = (props: VortexProps) => {
   const zOff = 0.0005;
   const backgroundColor = props.backgroundColor || "#000000";
   let tick = 0;
-  // @ts-ignore
-  const noise3D = createNoise3D("bags-auditor-seed");
   let particleProps = new Float32Array(particlePropsLength);
   let center: [number, number] = [0, 0];
  
