@@ -27,6 +27,34 @@ const GithubIcon = ({ className }: { className?: string }) => (
   </svg>
 );
 
+const SpotlightCard = ({ children, className = "" }: { children: React.ReactNode, className?: string }) => {
+  const [position, setPosition] = useState({ x: 0, y: 0 });
+  const [opacity, setOpacity] = useState(0);
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    setPosition({ x: e.clientX - rect.left, y: e.clientY - rect.top });
+  };
+
+  return (
+    <div
+      onMouseMove={handleMouseMove}
+      onMouseEnter={() => setOpacity(1)}
+      onMouseLeave={() => setOpacity(0)}
+      className={`relative overflow-hidden glass rounded-3xl ${className}`}
+    >
+      <div
+        className="pointer-events-none absolute -inset-px transition duration-300"
+        style={{
+          background: `radial-gradient(600px circle at ${position.x}px ${position.y}px, rgba(34, 211, 238, 0.1), transparent 40%)`,
+          opacity,
+        }}
+      />
+      {children}
+    </div>
+  );
+};
+
 // Mock types for Bags API
 interface TokenAudit {
   name: string;
@@ -169,6 +197,7 @@ const App = () => {
     <div className="min-h-screen font-sans selection:bg-primary/30">
       {/* Animated Background Mesh */}
       <div className="fixed inset-0 -z-10 bg-background overflow-hidden">
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]" />
         <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-primary/10 blur-[120px] animate-pulse" />
         <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-secondary/10 blur-[120px] animate-pulse" style={{ animationDelay: '2s' }} />
       </div>
@@ -249,9 +278,12 @@ const App = () => {
                   <Activity className="w-3 h-3 animate-pulse" />
                   AI-Powered Security Sentinel
                 </span>
-                <h1 className="text-5xl md:text-6xl font-bold mb-6 tracking-tighter leading-tight">
+                <h1 className="text-6xl md:text-7xl font-bold mb-6 tracking-tighter leading-tight relative">
                   Secure Your <span className="text-gradient">Bags</span> <br /> 
-                  with Claude AI.
+                  with <span className="relative inline-block group">
+                    Claude AI.
+                    <span className="absolute -bottom-2 left-0 w-0 h-1 bg-primary group-hover:w-full transition-all duration-500 rounded-full" />
+                  </span>
                 </h1>
               </motion.div>
             </section>
@@ -285,10 +317,13 @@ const App = () => {
               {auditResult && (
                 <>
                   <motion.div initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                    <div className="glass p-8 rounded-3xl flex flex-col items-center justify-center text-center group">
-                      <div className="text-sm font-bold text-white/40 uppercase mb-4">Safety Score</div>
-                      <div className={`text-7xl font-bold ${auditResult.safetyScore > 80 ? 'text-success' : 'text-warning'}`}>{auditResult.safetyScore}</div>
-                      <div className="text-sm font-medium mt-2 text-white/60">Verified by Claude-3.5</div>
+                    <div className="relative group overflow-hidden rounded-3xl p-[1px]">
+                      <div className="absolute inset-0 bg-gradient-to-r from-primary via-secondary to-primary animate-border-flow" />
+                      <div className="relative glass p-8 rounded-3xl flex flex-col items-center justify-center text-center bg-background/90 h-full">
+                        <div className="text-sm font-bold text-white/40 uppercase mb-4">Safety Score</div>
+                        <div className={`text-7xl font-bold ${auditResult.safetyScore > 80 ? 'text-success' : 'text-warning'}`}>{auditResult.safetyScore}</div>
+                        <div className="text-sm font-medium mt-2 text-white/60">Verified by Claude-3.5</div>
+                      </div>
                     </div>
                     <div className="md:col-span-2 glass p-8 rounded-3xl">
                       <div className="flex justify-between items-start mb-8">
@@ -379,9 +414,27 @@ const App = () => {
 
             {/* Features Grid */}
             <section id="features-section" className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              <FeatureCard icon={<Terminal />} title="AI Audit" desc="Deep-dive analysis of token dynamics." color="primary" />
-              <FeatureCard icon={<BarChart3 />} title="Fee Tracking" desc="Monitor the 1% creator fee distribution." color="secondary" />
-              <FeatureCard icon={<Cpu />} title="Live Feed" desc="Real-time activity from the Bags ecosystem." color="accent" />
+              <SpotlightCard className="p-8">
+                <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform text-primary">
+                  <Terminal />
+                </div>
+                <h4 className="text-xl font-bold mb-3">AI Audit</h4>
+                <p className="text-white/40 leading-relaxed text-sm">Deep-dive analysis of token dynamics.</p>
+              </SpotlightCard>
+              <SpotlightCard className="p-8">
+                <div className="w-12 h-12 rounded-2xl bg-secondary/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform text-secondary">
+                  <BarChart3 />
+                </div>
+                <h4 className="text-xl font-bold mb-3">Fee Tracking</h4>
+                <p className="text-white/40 leading-relaxed text-sm">Monitor the 1% creator fee distribution.</p>
+              </SpotlightCard>
+              <SpotlightCard className="p-8">
+                <div className="w-12 h-12 rounded-2xl bg-accent/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform text-accent">
+                  <Cpu />
+                </div>
+                <h4 className="text-xl font-bold mb-3">Live Feed</h4>
+                <p className="text-white/40 leading-relaxed text-sm">Real-time activity from the Bags ecosystem.</p>
+              </SpotlightCard>
             </section>
 
           </div>
