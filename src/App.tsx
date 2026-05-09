@@ -5,7 +5,6 @@ import {
   BarChart3, 
   Search, 
   Cpu, 
-  Activity,
   CheckCircle2,
   MessageSquare,
   Send,
