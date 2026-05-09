@@ -196,7 +196,7 @@ const App = () => {
     };
 
   return (
-    <div className="min-h-screen font-sans selection:bg-primary/30 bg-black text-white">
+    <div className="min-h-screen font-sans selection:bg-primary/30 text-white">
       {/* Cinematic Video Background */}
       <div className="fixed inset-0 -z-10 bg-black overflow-hidden">
         <video
@@ -204,12 +204,12 @@ const App = () => {
           loop
           muted
           playsInline
-          className="w-full h-full object-cover opacity-60"
+          className="w-full h-full object-cover opacity-80"
         >
           <source src="/bg-vortex.mp4" type="video/mp4" />
         </video>
-        <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-black/20" />
-        <div className="absolute inset-0 bg-black/20 backdrop-blur-[2px]" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-black/40" />
+        <div className="absolute inset-0 bg-black/10 backdrop-blur-[1px]" />
       </div>
 
       {/* Navigation */}

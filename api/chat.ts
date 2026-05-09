@@ -23,13 +23,10 @@ export default async function handler(
     const stream = await anthropic.messages.create({
       model: 'claude-3-5-sonnet-20240620',
       max_tokens: 500,
-      messages: [
-        {
-          role: 'system',
-          content: `You are a security auditor expert for the Bags ecosystem on Solana. 
+      system: `You are a security auditor expert for the Bags ecosystem on Solana. 
           Use the following context about the token being discussed: ${JSON.stringify(context)}.
-          Answer user questions concisely and focus on security risks, fee distribution, and creator trust.`
-        },
+          Answer user questions concisely and focus on security risks, fee distribution, and creator trust.`,
+      messages: [
         {
           role: 'user',
           content: message
