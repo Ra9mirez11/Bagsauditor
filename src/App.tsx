@@ -107,24 +107,25 @@ const App = () => {
     }
   };
 
-  const runAudit = async () => {
-    if (!searchQuery) return;
-    setIsAuditing(true);
-    setAuditResult(null);
-    
-    try {
-      // Try to call the real backend API
-      const response = await fetch('/api/audit', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token_mint: searchQuery })
-      });
+    const runAudit = async (forcedMint?: string) => {
+      const mint = forcedMint || searchQuery;
+      if (!mint) return;
+      setIsAuditing(true);
+      setAuditResult(null);
+      setChatMessages([]);
+      
+      try {
+        const response = await fetch('/api/audit', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token_mint: mint })
+        });
 
-      if (response.ok) {
-        const data = await response.json();
+        if (response.ok) {
+          const data = await response.json();
           setAuditResult({
-            name: data.name || (searchQuery.length > 15 ? 'SOLANA TOKEN' : searchQuery.toUpperCase()),
-            symbol: data.symbol || searchQuery.substring(0, 4).toUpperCase(),
+            name: data.name || (mint.length > 15 ? 'SOLANA TOKEN' : mint.toUpperCase()),
+            symbol: data.symbol || mint.substring(0, 4).toUpperCase(),
             safetyScore: data.safetyScore,
             riskLevel: data.riskLevel,
             vulnerabilities: data.vulnerabilities,
@@ -137,19 +138,17 @@ const App = () => {
         }
       } catch (error) {
         console.warn("Backend failed, falling back to local simulation:", error);
-        // Fallback to local simulation
-        const data = await bagsService.auditToken(searchQuery);
+        const data = await bagsService.auditToken(mint);
         const aiAnalysis = await simulateClaudeAudit(data);
         
-        // Generate dummy events for simulation
         const dummyEvents = Array.from({ length: 12 }).map((_, i) => ({
           timestamp: Date.now() - (12 - i) * 24 * 60 * 60 * 1000,
           amount: Math.random() * 5 + 1
         }));
 
         setAuditResult({
-          name: searchQuery.length > 15 ? 'SOLANA TOKEN' : searchQuery.toUpperCase(),
-          symbol: searchQuery.substring(0, 4).toUpperCase(),
+          name: mint.length > 15 ? 'SOLANA TOKEN' : mint.toUpperCase(),
+          symbol: mint.substring(0, 4).toUpperCase(),
           safetyScore: data.safetyScore,
           riskLevel: data.riskLevel as 'Low' | 'Medium' | 'High',
           vulnerabilities: aiAnalysis.insights,
@@ -159,7 +158,13 @@ const App = () => {
         });
       } finally {
         setIsAuditing(false);
+        window.scrollTo({ top: 400, behavior: 'smooth' });
       }
+    };
+
+    const scrollToSection = (id: string) => {
+      const el = document.getElementById(id);
+      if (el) el.scrollIntoView({ behavior: 'smooth' });
     };
 
   return (
@@ -181,11 +186,14 @@ const App = () => {
           </div>
           
           <div className="hidden md:flex items-center gap-8 text-sm font-medium text-white/60">
-            <a href="#" className="hover:text-primary transition-colors">Analyzer</a>
-            <a href="#" className="hover:text-primary transition-colors">Fee Tracker</a>
-            <a href="#" className="hover:text-primary transition-colors">Documentation</a>
+            <button onClick={() => scrollToSection('search-section')} className="hover:text-primary transition-colors">Analyzer</button>
+            <button onClick={() => scrollToSection('features-section')} className="hover:text-primary transition-colors">Features</button>
+            <a href="https://docs.bags.fm/" target="_blank" rel="noreferrer" className="hover:text-primary transition-colors">Bags Docs</a>
             <div className="h-4 w-px bg-white/10" />
-            <button className="flex items-center gap-2 bg-white/5 hover:bg-white/10 px-4 py-2 rounded-full border border-white/10 transition-all">
+            <button 
+              onClick={() => window.open('https://github.com/Ra9mirez11/Bagsauditor', '_blank')}
+              className="flex items-center gap-2 bg-white/5 hover:bg-white/10 px-4 py-2 rounded-full border border-white/10 transition-all"
+            >
               <CodeXml className="w-4 h-4" />
               <span>GitHub</span>
             </button>
@@ -214,7 +222,7 @@ const App = () => {
                     className="p-3 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/10 transition-colors cursor-pointer group"
                     onClick={() => {
                       setSearchQuery(item.tokenMint);
-                      // Auto trigger audit if needed
+                      runAudit(item.tokenMint);
                     }}
                   >
                     <div className="flex justify-between items-center mb-1">
@@ -249,7 +257,7 @@ const App = () => {
             </section>
 
             {/* Audit Search */}
-            <section className="mb-12">
+            <section id="search-section" className="mb-12">
               <motion.div className="glass p-2 rounded-3xl glow-cyan-hover transition-all max-w-2xl mx-auto">
                 <div className="flex items-center gap-2">
                   <div className="pl-4"><Search className="w-5 h-5 text-white/40" /></div>
@@ -370,7 +378,7 @@ const App = () => {
             </AnimatePresence>
 
             {/* Features Grid */}
-            <section className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <section id="features-section" className="grid grid-cols-1 md:grid-cols-3 gap-8">
               <FeatureCard icon={<Terminal />} title="AI Audit" desc="Deep-dive analysis of token dynamics." color="primary" />
               <FeatureCard icon={<BarChart3 />} title="Fee Tracking" desc="Monitor the 1% creator fee distribution." color="secondary" />
               <FeatureCard icon={<Cpu />} title="Live Feed" desc="Real-time activity from the Bags ecosystem." color="accent" />
