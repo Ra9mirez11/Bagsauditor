@@ -25,7 +25,7 @@ export default async function handler(
         "X-Title": "Bags Auditor Sentinel"
       },
       body: JSON.stringify({
-        model: "anthropic/claude-3-haiku",
+        model: "nvidia/nemotron-3-super-120b-a12b:free",
         messages: [
           {
             role: 'system',
