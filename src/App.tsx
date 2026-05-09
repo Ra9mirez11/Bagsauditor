@@ -67,16 +67,6 @@ interface TokenAudit {
   claimEvents?: any[];
 }
 
-const FeatureCard = ({ icon, title, desc, color }: { icon: any, title: string, desc: string, color: string }) => (
-  <div className="glass p-8 rounded-3xl glass-hover group">
-    <div className={`w-12 h-12 rounded-2xl bg-${color}/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform text-${color}`}>
-      {icon}
-    </div>
-    <h4 className="text-xl font-bold mb-3">{title}</h4>
-    <p className="text-white/40 leading-relaxed text-sm">{desc}</p>
-  </div>
-);
-
 const App = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [isAuditing, setIsAuditing] = useState(false);
