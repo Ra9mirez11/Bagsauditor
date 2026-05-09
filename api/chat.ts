@@ -1,9 +1,4 @@
 import { VercelRequest, VercelResponse } from '@vercel/node';
-import { OpenRouter } from "@openrouter/sdk";
-
-const openrouter = new OpenRouter({
-  apiKey: process.env.ANTHROPIC_API_KEY || '',
-});
 
 export default async function handler(
   request: VercelRequest,
@@ -14,33 +9,49 @@ export default async function handler(
   }
 
   const { message, context } = request.body;
+  const apiKey = process.env.ANTHROPIC_API_KEY;
 
-  if (!message) {
-    return response.status(400).json({ error: 'Message is required' });
+  if (!apiKey) {
+    return response.status(500).json({ error: 'API key not configured' });
   }
 
   try {
-    const res = await openrouter.chat.send({
-      model: "anthropic/claude-3-haiku",
-      messages: [
-        {
-          role: 'system',
-          content: `You are a security auditor expert for the Bags ecosystem on Solana. 
-          Use the following context about the token being discussed: ${JSON.stringify(context)}.
-          Answer user questions concisely and focus on security risks, fee distribution, and creator trust.`
-        },
-        {
-          role: 'user',
-          content: message
-        }
-      ],
+    const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+        "HTTP-Referer": "https://bagsauditor.vercel.app",
+        "X-Title": "Bags Auditor Sentinel"
+      },
+      body: JSON.stringify({
+        model: "anthropic/claude-3-haiku",
+        messages: [
+          {
+            role: 'system',
+            content: `You are a security auditor expert for the Bags ecosystem on Solana. 
+            Context: ${JSON.stringify(context)}.
+            Focus on security risks, fee distribution, and creator trust.`
+          },
+          {
+            role: 'user',
+            content: message
+          }
+        ]
+      })
     });
 
-    const reply = res.choices[0]?.message?.content || 'I cannot answer that right now.';
+    if (!res.ok) {
+      const errorText = await res.text();
+      throw new Error(`OpenRouter error: ${res.status} ${errorText}`);
+    }
+
+    const data = await res.json();
+    const reply = data.choices?.[0]?.message?.content || 'I cannot answer that right now.';
 
     return response.status(200).json({ reply });
   } catch (error: any) {
-    console.error(error);
+    console.error("Chat API Error:", error);
     return response.status(500).json({ error: error.message });
   }
 }
