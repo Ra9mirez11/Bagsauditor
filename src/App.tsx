@@ -7,7 +7,6 @@ import {
   Cpu, 
   Activity,
   CheckCircle2,
-  CodeXml,
   MessageSquare,
   Send,
   Zap
