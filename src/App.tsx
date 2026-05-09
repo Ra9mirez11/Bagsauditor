@@ -270,7 +270,7 @@ const App = () => {
                     onKeyDown={(e) => e.key === 'Enter' && runAudit()}
                   />
                   <button 
-                    onClick={runAudit}
+                    onClick={() => runAudit()}
                     disabled={isAuditing}
                     className="bg-primary hover:bg-primary/80 text-background px-8 py-4 rounded-2xl font-bold transition-all flex items-center gap-2 disabled:opacity-50"
                   >
