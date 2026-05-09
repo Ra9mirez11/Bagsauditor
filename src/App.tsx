@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { 
   ShieldCheck, 
   Terminal, 
@@ -7,7 +7,10 @@ import {
   Cpu, 
   Activity,
   CheckCircle2,
-  CodeXml
+  CodeXml,
+  MessageSquare,
+  Send,
+  Zap
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
@@ -42,6 +45,57 @@ const App = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [isAuditing, setIsAuditing] = useState(false);
   const [auditResult, setAuditResult] = useState<TokenAudit | null>(null);
+  const [feed, setFeed] = useState<any[]>([]);
+  const [chatMessages, setChatMessages] = useState<any[]>([]);
+  const [currentMessage, setCurrentMessage] = useState('');
+  const [isSending, setIsSending] = useState(false);
+
+  useEffect(() => {
+    fetchFeed();
+    const interval = setInterval(fetchFeed, 30000); // Update every 30s
+    return () => clearInterval(interval);
+  }, []);
+
+  const fetchFeed = async () => {
+    try {
+      const res = await fetch('/api/feed');
+      if (res.ok) {
+        const data = await res.json();
+        setFeed(data.slice(0, 10));
+      }
+    } catch (e) {
+      console.warn("Feed fetch failed");
+    }
+  };
+
+  const sendChatMessage = async () => {
+    if (!currentMessage || !auditResult) return;
+    
+    const userMsg = { role: 'user', content: currentMessage };
+    setChatMessages(prev => [...prev, userMsg]);
+    setCurrentMessage('');
+    setIsSending(true);
+
+    try {
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: currentMessage,
+          context: auditResult
+        })
+      });
+      
+      if (res.ok) {
+        const data = await res.json();
+        setChatMessages(prev => [...prev, { role: 'ai', content: data.reply }]);
+      }
+    } catch (e) {
+      setChatMessages(prev => [...prev, { role: 'ai', content: "Sorry, I'm having trouble connecting to Claude right now." }]);
+    } finally {
+      setIsSending(false);
+    }
+  };
 
   const runAudit = async () => {
     if (!searchQuery) return;
@@ -131,201 +185,188 @@ const App = () => {
 
       {/* Main Content */}
       <main className="pt-32 pb-20 px-6">
-        <div className="max-w-5xl mx-auto">
+        <div className="max-w-7xl mx-auto flex flex-col lg:flex-row gap-12">
           
-          {/* Hero Section */}
-          <section className="text-center mb-20">
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-            >
-              <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-xs font-bold text-primary uppercase tracking-widest mb-6">
-                <Activity className="w-3 h-3 animate-pulse" />
-                AI-Powered Security Sentinel
-              </span>
-              <h1 className="text-6xl md:text-7xl font-bold mb-6 tracking-tighter leading-tight">
-                Secure Your <span className="text-gradient">Bags</span> <br /> 
-                with Claude AI.
-              </h1>
-              <p className="text-xl text-white/50 max-w-2xl mx-auto leading-relaxed">
-                Autonomous security audits for Solana's premier creator tokens. Detect scams, analyze fee distributions, and trade with confidence.
-              </p>
-            </motion.div>
-          </section>
-
-          {/* Audit Search */}
-          <section className="mb-20">
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.2 }}
-              className="glass p-2 rounded-3xl glow-cyan-hover group transition-all max-w-2xl mx-auto"
-            >
-              <div className="flex items-center gap-2">
-                <div className="pl-4">
-                  <Search className="w-5 h-5 text-white/40" />
-                </div>
-                <input 
-                  type="text" 
-                  placeholder="Enter Creator Token Address or Name..." 
-                  className="w-full bg-transparent border-none focus:ring-0 py-4 text-lg placeholder:text-white/20"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && runAudit()}
-                />
-                <button 
-                  onClick={runAudit}
-                  disabled={isAuditing}
-                  className="bg-primary hover:bg-primary/80 text-background px-8 py-4 rounded-2xl font-bold transition-all flex items-center gap-2 disabled:opacity-50"
-                >
-                  {isAuditing ? (
-                    <>
-                      <div className="w-4 h-4 border-2 border-background/20 border-t-background rounded-full animate-spin" />
-                      <span>Auditing...</span>
-                    </>
-                  ) : (
-                    <span>Audit Now</span>
-                  )}
-                </button>
+          {/* Sidebar Feed */}
+          <div className="w-full lg:w-80 shrink-0">
+            <div className="glass p-6 rounded-3xl sticky top-32">
+              <div className="flex items-center gap-2 mb-6">
+                <Zap className="w-4 h-4 text-secondary animate-pulse" />
+                <h3 className="font-bold text-sm uppercase tracking-widest text-white/60">Live Bags Activity</h3>
               </div>
-            </motion.div>
-          </section>
+              <div className="space-y-4 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
+                {feed.length > 0 ? feed.map((item, i) => (
+                  <motion.div 
+                    key={i} 
+                    initial={{ opacity: 0, x: -10 }} 
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: i * 0.05 }}
+                    className="p-3 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/10 transition-colors cursor-pointer group"
+                    onClick={() => {
+                      setSearchQuery(item.tokenMint);
+                      // Auto trigger audit if needed
+                    }}
+                  >
+                    <div className="flex justify-between items-center mb-1">
+                      <span className="font-bold text-xs group-hover:text-primary transition-colors">{item.symbol}</span>
+                      <span className="text-[10px] text-white/30">{item.status}</span>
+                    </div>
+                    <p className="text-[10px] text-white/40 truncate">{item.name}</p>
+                  </motion.div>
+                )) : (
+                  <div className="text-center py-10 text-white/20 text-xs">No active launches found</div>
+                )}
+              </div>
+            </div>
+          </div>
 
-          {/* Audit Results (Conditional) */}
-          <AnimatePresence>
-            {auditResult && (
-              <>
-                <motion.div initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                  <div className="glass p-8 rounded-3xl flex flex-col items-center justify-center text-center group">
-                    <div className="text-sm font-bold text-white/40 uppercase mb-4">Safety Score</div>
-                    <div className={`text-7xl font-bold ${auditResult.safetyScore > 80 ? 'text-success' : 'text-warning'}`}>{auditResult.safetyScore}</div>
-                    <div className="text-sm font-medium mt-2 text-white/60">Verified by Claude-3.5</div>
-                  </div>
-                  <div className="md:col-span-2 glass p-8 rounded-3xl">
-                    <div className="flex justify-between items-start mb-8">
-                      <div>
-                        <h3 className="text-2xl font-bold mb-1">{auditResult.name}</h3>
-                        <p className="text-primary font-mono text-sm">${auditResult.symbol}</p>
+          <div className="flex-1 min-w-0">
+            {/* Hero Section */}
+            <section className="text-center mb-12">
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+              >
+                <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-xs font-bold text-primary uppercase tracking-widest mb-6">
+                  <Activity className="w-3 h-3 animate-pulse" />
+                  AI-Powered Security Sentinel
+                </span>
+                <h1 className="text-5xl md:text-6xl font-bold mb-6 tracking-tighter leading-tight">
+                  Secure Your <span className="text-gradient">Bags</span> <br /> 
+                  with Claude AI.
+                </h1>
+              </motion.div>
+            </section>
+
+            {/* Audit Search */}
+            <section className="mb-12">
+              <motion.div className="glass p-2 rounded-3xl glow-cyan-hover transition-all max-w-2xl mx-auto">
+                <div className="flex items-center gap-2">
+                  <div className="pl-4"><Search className="w-5 h-5 text-white/40" /></div>
+                  <input 
+                    type="text" 
+                    placeholder="Enter Token Mint Address..." 
+                    className="w-full bg-transparent border-none focus:ring-0 py-4 text-lg placeholder:text-white/20"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && runAudit()}
+                  />
+                  <button 
+                    onClick={runAudit}
+                    disabled={isAuditing}
+                    className="bg-primary hover:bg-primary/80 text-background px-8 py-4 rounded-2xl font-bold transition-all flex items-center gap-2 disabled:opacity-50"
+                  >
+                    {isAuditing ? <><div className="w-4 h-4 border-2 border-background/20 border-t-background rounded-full animate-spin" /><span>Auditing...</span></> : <span>Audit Now</span>}
+                  </button>
+                </div>
+              </motion.div>
+            </section>
+
+            {/* Audit Results */}
+            <AnimatePresence>
+              {auditResult && (
+                <>
+                  <motion.div initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                    <div className="glass p-8 rounded-3xl flex flex-col items-center justify-center text-center group">
+                      <div className="text-sm font-bold text-white/40 uppercase mb-4">Safety Score</div>
+                      <div className={`text-7xl font-bold ${auditResult.safetyScore > 80 ? 'text-success' : 'text-warning'}`}>{auditResult.safetyScore}</div>
+                      <div className="text-sm font-medium mt-2 text-white/60">Verified by Claude-3.5</div>
+                    </div>
+                    <div className="md:col-span-2 glass p-8 rounded-3xl">
+                      <div className="flex justify-between items-start mb-8">
+                        <div>
+                          <h3 className="text-2xl font-bold mb-1">{auditResult.name}</h3>
+                          <p className="text-primary font-mono text-sm">${auditResult.symbol}</p>
+                        </div>
+                        <div className="flex gap-2">
+                          <span className="px-3 py-1 rounded-full bg-success/10 border border-success/20 text-xs font-bold text-success uppercase">Secure</span>
+                          <span className="px-3 py-1 rounded-full bg-white/5 border border-white/10 text-xs font-bold text-white/60">BAGS V2</span>
+                        </div>
                       </div>
-                      <div className="flex gap-2">
-                        <span className="px-3 py-1 rounded-full bg-success/10 border border-success/20 text-xs font-bold text-success uppercase">Secure</span>
-                        <span className="px-3 py-1 rounded-full bg-white/5 border border-white/10 text-xs font-bold text-white/60">BAGS V2</span>
+                      <div className="space-y-4">
+                        {auditResult.vulnerabilities.map((v, i) => (
+                          <div key={i} className="flex items-center gap-3 text-white/80">
+                            <CheckCircle2 className="w-5 h-5 text-success" />
+                            <span>{v}</span>
+                          </div>
+                        ))}
                       </div>
                     </div>
-                    <div className="space-y-4">
-                      {auditResult.vulnerabilities.map((v, i) => (
-                        <div key={i} className="flex items-center gap-3 text-white/80">
-                          <CheckCircle2 className="w-5 h-5 text-success" />
-                          <span>{v}</span>
+                  </motion.div>
+
+                  {/* Fee Chart */}
+                  <motion.div initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} className="glass p-8 rounded-3xl mb-8">
+                    <div className="flex items-center justify-between mb-8">
+                      <h4 className="text-xl font-bold">Fee Distribution Timeline</h4>
+                      <p className="text-white/40 text-xs">Visualizing distributions (SOL)</p>
+                    </div>
+                    <div className="h-[250px] w-full">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <AreaChart data={auditResult.claimEvents}>
+                          <defs>
+                            <linearGradient id="colorAmount" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="5%" stopColor="#22d3ee" stopOpacity={0.3}/>
+                              <stop offset="95%" stopColor="#22d3ee" stopOpacity={0}/>
+                            </linearGradient>
+                          </defs>
+                          <CartesianGrid strokeDasharray="3 3" stroke="#ffffff05" vertical={false} />
+                          <XAxis dataKey="timestamp" hide />
+                          <YAxis stroke="#ffffff20" fontSize={10} />
+                          <Tooltip contentStyle={{ backgroundColor: '#09090b', border: '1px solid #ffffff10', borderRadius: '12px' }} />
+                          <Area type="monotone" dataKey="amount" stroke="#22d3ee" fill="url(#colorAmount)" strokeWidth={3} />
+                        </AreaChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </motion.div>
+
+                  {/* AI Researcher Chat */}
+                  <motion.div initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} className="glass rounded-3xl overflow-hidden mb-20 border border-primary/20">
+                    <div className="bg-primary/5 p-4 border-b border-white/5 flex items-center gap-3">
+                      <MessageSquare className="w-5 h-5 text-primary" />
+                      <h4 className="font-bold text-sm uppercase tracking-widest">Claude AI Security Researcher</h4>
+                    </div>
+                    <div className="h-64 overflow-y-auto p-6 space-y-4 custom-scrollbar">
+                      {chatMessages.length === 0 && (
+                        <p className="text-white/20 text-center py-10 text-sm">Ask Claude about this token's security or fee structure...</p>
+                      )}
+                      {chatMessages.map((msg, i) => (
+                        <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                          <div className={`max-w-[80%] p-4 rounded-2xl text-sm ${msg.role === 'user' ? 'bg-primary text-background font-bold' : 'bg-white/5 border border-white/10 text-white/80'}`}>
+                            {msg.content}
+                          </div>
                         </div>
                       ))}
                     </div>
-                    <div className="mt-8 pt-8 border-t border-white/5 flex gap-8">
-                      <div>
-                        <div className="text-[10px] uppercase font-bold text-white/30 mb-1">Ownership</div>
-                        <div className="text-sm font-medium text-white/80">{auditResult.ownerStatus}</div>
-                      </div>
-                      <div>
-                        <div className="text-[10px] uppercase font-bold text-white/30 mb-1">Liquidity</div>
-                        <div className="text-sm font-medium text-white/80">{auditResult.liquidityStatus}</div>
-                      </div>
+                    <div className="p-4 bg-white/5 border-t border-white/5 flex gap-2">
+                      <input 
+                        type="text" 
+                        placeholder="Ask Claude..." 
+                        className="flex-1 bg-background/50 border-white/10 rounded-xl px-4 py-2 text-sm focus:ring-primary focus:border-primary"
+                        value={currentMessage}
+                        onChange={(e) => setCurrentMessage(e.target.value)}
+                        onKeyDown={(e) => e.key === 'Enter' && sendChatMessage()}
+                      />
+                      <button 
+                        onClick={sendChatMessage}
+                        disabled={isSending}
+                        className="bg-primary hover:bg-primary/80 text-background p-2 rounded-xl disabled:opacity-50"
+                      >
+                        <Send className="w-5 h-5" />
+                      </button>
                     </div>
-                  </div>
-                </motion.div>
+                  </motion.div>
+                </>
+              )}
+            </AnimatePresence>
 
-                {/* Fee Visualization Chart */}
-                <motion.div 
-                  initial={{ opacity: 0, y: 40 }} 
-                  animate={{ opacity: 1, y: 0 }} 
-                  transition={{ delay: 0.1 }}
-                  className="glass p-8 rounded-3xl mb-20"
-                >
-                  <div className="flex items-center justify-between mb-8">
-                    <div>
-                      <h4 className="text-xl font-bold">Fee Distribution Timeline</h4>
-                      <p className="text-white/40 text-sm">Visualizing the 1% creator fee distribution (SOL)</p>
-                    </div>
-                    <div className="flex gap-2">
-                      <div className="flex items-center gap-2 text-xs font-bold text-white/40">
-                        <div className="w-3 h-3 rounded-full bg-primary/40" />
-                        <span>Claims</span>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div className="h-[300px] w-full">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <AreaChart data={auditResult.claimEvents}>
-                        <defs>
-                          <linearGradient id="colorAmount" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="5%" stopColor="#22d3ee" stopOpacity={0.3}/>
-                            <stop offset="95%" stopColor="#22d3ee" stopOpacity={0}/>
-                          </linearGradient>
-                        </defs>
-                        <CartesianGrid strokeDasharray="3 3" stroke="#ffffff05" vertical={false} />
-                        <XAxis 
-                          dataKey="timestamp" 
-                          hide 
-                        />
-                        <YAxis 
-                          stroke="#ffffff20" 
-                          fontSize={12} 
-                        />
-                        <Tooltip 
-                          contentStyle={{ backgroundColor: '#09090b', border: '1px solid #ffffff10', borderRadius: '12px' }}
-                          itemStyle={{ color: '#22d3ee' }}
-                          labelFormatter={(label) => new Date(label).toLocaleDateString()}
-                        />
-                        <Area 
-                          type="monotone" 
-                          dataKey="amount" 
-                          stroke="#22d3ee" 
-                          fillOpacity={1} 
-                          fill="url(#colorAmount)" 
-                          strokeWidth={3}
-                        />
-                      </AreaChart>
-                    </ResponsiveContainer>
-                  </div>
-                </motion.div>
-              </>
-            )}
-          </AnimatePresence>
+            {/* Features Grid */}
+            <section className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              <FeatureCard icon={<Terminal />} title="AI Audit" desc="Deep-dive analysis of token dynamics." color="primary" />
+              <FeatureCard icon={<BarChart3 />} title="Fee Tracking" desc="Monitor the 1% creator fee distribution." color="secondary" />
+              <FeatureCard icon={<Cpu />} title="Live Feed" desc="Real-time activity from the Bags ecosystem." color="accent" />
+            </section>
 
-          {/* Features Grid */}
-          <section className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="glass p-8 rounded-3xl glass-hover group">
-              <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                <Terminal className="text-primary w-6 h-6" />
-              </div>
-              <h4 className="text-xl font-bold mb-3">Claude Integration</h4>
-              <p className="text-white/40 leading-relaxed">
-                Utilizes Claude 3.5 Sonnet to perform deep-dive analysis of token dynamics and social sentiment.
-              </p>
-            </div>
-
-            <div className="glass p-8 rounded-3xl glass-hover group">
-              <div className="w-12 h-12 rounded-2xl bg-secondary/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                <BarChart3 className="text-secondary w-6 h-6" />
-              </div>
-              <h4 className="text-xl font-bold mb-3">Fee Visualization</h4>
-              <p className="text-white/40 leading-relaxed">
-                Real-time tracking of the 1% creator fee and distribution metrics for community holders.
-              </p>
-            </div>
-
-            <div className="glass p-8 rounded-3xl glass-hover group">
-              <div className="w-12 h-12 rounded-2xl bg-accent/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                <Cpu className="text-accent w-6 h-6" />
-              </div>
-              <h4 className="text-xl font-bold mb-3">Autonomous Agents</h4>
-              <p className="text-white/40 leading-relaxed">
-                Deploy agents that automatically claim fees and re-invest into high-safety creator pools.
-              </p>
-            </div>
-          </section>
-
+          </div>
         </div>
       </main>
 

@@ -68,6 +68,21 @@ export class BagsService {
     }
   }
 
+  async getTokenLaunchFeed() {
+    try {
+      // The SDK might have a method, but we can also use fetch directly
+      // since the SDK version might be slightly behind the API
+      const response = await fetch("https://public-api-v2.bags.fm/api/v1/token-launch/feed", {
+        headers: { "x-api-key": this.sdk.apiKey }
+      });
+      const data = await response.json();
+      return data.success ? data.response : [];
+    } catch (error) {
+      console.error("Error fetching launch feed:", error);
+      return [];
+    }
+  }
+
   private calculateSafetyScore(data: any) {
     let score = 50; // Base score
     if (data.creators.length > 0) score += 20;
