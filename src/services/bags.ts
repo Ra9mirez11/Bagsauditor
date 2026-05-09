@@ -6,8 +6,10 @@ const SOLANA_RPC_URL = "https://api.mainnet-beta.solana.com"; // Default public 
 export class BagsService {
   private sdk: BagsSDK;
   private connection: Connection;
+  private apiKey: string;
 
   constructor(apiKey: string) {
+    this.apiKey = apiKey;
     this.connection = new Connection(SOLANA_RPC_URL);
     this.sdk = new BagsSDK(apiKey, this.connection, "processed");
   }
@@ -17,8 +19,8 @@ export class BagsService {
       const pubkey = new PublicKey(mint);
       // The SDK might have a method for metadata, but we can also fetch from chain
       // For now, let's use what we saw in the docs
-      const fees = await this.sdk.state.getTokenLifetimeFees(pubkey);
-      const creators = await this.sdk.state.getTokenCreators(pubkey);
+      const fees = await (this.sdk.state as any).getTokenLifetimeFees(pubkey);
+      const creators = await (this.sdk.state as any).getTokenCreators(pubkey);
       
       return {
         mint,
@@ -50,13 +52,13 @@ export class BagsService {
     try {
       const pubkey = new PublicKey(mint);
       // Fetch last 100 claim events
-      const events = await this.sdk.state.getTokenClaimEvents(pubkey, {
-        mode: "offset",
+      // Casting to any because SDK types might be outdated compared to documentation
+      const events = await (this.sdk.state as any).getTokenClaimEvents(pubkey, {
         limit: 100,
         offset: 0,
       });
       
-      return events.map(e => ({
+      return (events || []).map((e: any) => ({
         amount: Number(e.amount) / 1e9,
         timestamp: new Date(e.timestamp).getTime(),
         wallet: e.wallet,
@@ -73,7 +75,7 @@ export class BagsService {
       // The SDK might have a method, but we can also use fetch directly
       // since the SDK version might be slightly behind the API
       const response = await fetch("https://public-api-v2.bags.fm/api/v1/token-launch/feed", {
-        headers: { "x-api-key": this.sdk.apiKey }
+        headers: { "x-api-key": this.apiKey }
       });
       const data = await response.json();
       return data.success ? data.response : [];
