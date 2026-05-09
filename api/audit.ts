@@ -1,9 +1,9 @@
 import { VercelRequest, VercelResponse } from '@vercel/node';
-import Anthropic from '@anthropic-ai/sdk';
+import { OpenRouter } from "@openrouter/sdk";
 import { BagsService } from '../src/services/bags';
 
-const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY || '',
+const openrouter = new OpenRouter({
+  apiKey: process.env.OPENROUTER_API_KEY || '',
 });
 
 export default async function handler(
@@ -26,10 +26,9 @@ export default async function handler(
     const tokenData = await bagsService.auditToken(token_mint);
     const claimEvents = await bagsService.getClaimEvents(token_mint);
 
-    // 2. Call Claude AI
-    const message = await anthropic.messages.create({
-      model: 'claude-3-5-sonnet-20240620',
-      max_tokens: 1000,
+    // 2. Call Claude AI via OpenRouter
+    const res = await openrouter.chat.send({
+      model: "anthropic/claude-3-haiku",
       messages: [
         {
           role: 'user',
@@ -42,9 +41,7 @@ export default async function handler(
       ],
     });
 
-    // Parse Claude's response (assuming it follows instructions)
-    // Note: In production, you'd want better parsing/error handling
-    const content = message.content[0].type === 'text' ? message.content[0].text : '{}';
+    const content = res.choices[0]?.message?.content || '{}';
     const aiAnalysis = JSON.parse(content.substring(content.indexOf('{'), content.lastIndexOf('}') + 1));
 
     return response.status(200).json({
