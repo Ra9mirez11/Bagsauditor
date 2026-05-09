@@ -113,6 +113,12 @@ const App = () => {
   }, []);
 
   const fetchFeed = async () => {
+    const fallbackData = [
+      { symbol: 'BAGS', name: 'Bags Official', status: 'LIVE', tokenMint: 'BAGS...' },
+      { symbol: 'SOL', name: 'Solana', status: 'ACTIVE', tokenMint: 'So11...' },
+      { symbol: 'SEND', name: 'Send It', status: 'TRENDING', tokenMint: 'SEND...' },
+    ];
+
     try {
       const res = await fetch('/api/feed');
       if (res.ok) {
@@ -120,16 +126,14 @@ const App = () => {
         if (data && data.length > 0) {
           setFeed(data.slice(0, 10));
         } else {
-          // Fallback to trending tokens if feed is empty
-          setFeed([
-            { symbol: 'BAGS', name: 'Bags Official', status: 'LIVE', tokenMint: 'BAGS...' },
-            { symbol: 'SOL', name: 'Solana', status: 'ACTIVE', tokenMint: 'So11...' },
-            { symbol: 'SEND', name: 'Send It', status: 'TRENDING', tokenMint: 'SEND...' },
-          ]);
+          setFeed(fallbackData);
         }
+      } else {
+        setFeed(fallbackData);
       }
     } catch (e) {
-      console.warn("Feed fetch failed");
+      console.warn("Feed fetch failed, using fallback");
+      setFeed(fallbackData);
     }
   };
 
