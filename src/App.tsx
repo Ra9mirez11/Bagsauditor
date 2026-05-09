@@ -70,26 +70,27 @@ interface TokenAudit {
 const Vortex = () => {
   return (
     <div className="fixed inset-0 -z-10 overflow-hidden bg-background">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(0,245,255,0.05),transparent_70%)]" />
-      <div className="absolute inset-0 bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-[size:32px_32px]" />
-      {[...Array(15)].map((_, i) => (
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(0,245,255,0.1),transparent_70%)]" />
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,#8080801a_1px,transparent_1px),linear-gradient(to_bottom,#8080801a_1px,transparent_1px)] bg-[size:32px_32px]" />
+      {[...Array(30)].map((_, i) => (
         <motion.div
           key={i}
-          className="absolute w-1 h-1 bg-primary/10 rounded-full"
+          className="absolute w-1 h-1 bg-primary/40 rounded-full blur-[1px]"
           initial={{ 
             x: Math.random() * 100 + "%", 
             y: Math.random() * 100 + "%",
             opacity: 0
           }}
           animate={{
-            y: [null, "-100%"],
+            y: [null, "-120%"],
             opacity: [0, 1, 0],
+            scale: [1, 2, 1]
           }}
           transition={{
-            duration: Math.random() * 20 + 10,
+            duration: Math.random() * 15 + 5,
             repeat: Infinity,
             ease: "linear",
-            delay: Math.random() * 10
+            delay: Math.random() * 5
           }}
         />
       ))}
@@ -237,7 +238,13 @@ const App = () => {
             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center glow-cyan">
               <ShieldCheck className="text-background w-6 h-6" />
             </div>
-            <span className="text-xl font-bold tracking-tight">BAGS<span className="text-primary">AUDITOR</span></span>
+            <div>
+              <span className="text-xl font-black tracking-tighter text-white">BAGS<span className="text-primary">AUDITOR</span></span>
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] text-primary font-bold uppercase tracking-widest">Sentinel AI</span>
+                <span className="bg-white/10 text-[8px] px-1.5 py-0.5 rounded text-white/60">v1.1-VORTEX</span>
+              </div>
+            </div>
           </div>
           
           <div className="hidden md:flex items-center gap-8 text-sm font-medium text-white/60">
