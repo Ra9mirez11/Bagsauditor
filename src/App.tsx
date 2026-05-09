@@ -42,7 +42,7 @@ const SpotlightCard = ({ children, className = "" }: { children: React.ReactNode
       onMouseMove={handleMouseMove}
       onMouseEnter={() => setOpacity(1)}
       onMouseLeave={() => setOpacity(0)}
-      className={`relative overflow-hidden glass rounded-3xl ${className}`}
+      className={`relative overflow-hidden bg-white/[0.02] backdrop-blur-3xl border border-white/5 rounded-3xl transition-colors hover:border-white/10 ${className}`}
     >
       <div
         className="pointer-events-none absolute -inset-px transition duration-300"
@@ -198,14 +198,14 @@ const App = () => {
     };
 
   return (
-    <div className="min-h-screen font-sans selection:bg-primary/30">
-      <div className="fixed inset-0 -z-10">
+    <div className="min-h-screen font-sans selection:bg-primary/30 bg-black text-white">
+      <div className="fixed inset-0 -z-10 bg-black">
         <Vortex
-          backgroundColor="#050505"
+          backgroundColor="#000000"
           rangeY={800}
-          particleCount={500}
-          baseHue={180}
-          containerClassName="h-full w-full"
+          particleCount={300}
+          baseHue={200}
+          containerClassName="h-full w-full opacity-60"
         />
       </div>
 
@@ -282,22 +282,32 @@ const App = () => {
           <div className="flex-1 min-w-0">
             {/* Hero Section */}
             <section className="text-center mb-12">
+              <div className="flex flex-col items-center text-center space-y-6">
               <motion.div 
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
+                initial={{ opacity: 0, scale: 0.9 }} 
+                animate={{ opacity: 1, scale: 1 }}
+                className="px-4 py-1.5 rounded-full bg-white/5 border border-white/10 text-primary text-[10px] font-bold uppercase tracking-[0.2em]"
               >
-                <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-xs font-bold text-primary uppercase tracking-widest mb-6">
-                  <Activity className="w-3 h-3 animate-pulse" />
-                  AI-Powered Security Sentinel
-                </span>
-                <h1 className="text-6xl md:text-7xl font-bold mb-6 tracking-tighter leading-tight relative">
-                  Secure Your <span className="text-gradient">Bags</span> <br /> 
-                  with <span className="relative inline-block group">
-                    Claude AI.
-                    <span className="absolute -bottom-2 left-0 w-0 h-1 bg-primary group-hover:w-full transition-all duration-500 rounded-full" />
-                  </span>
-                </h1>
+                AI-Powered Security Sentinel
               </motion.div>
+              
+              <h1 className="text-4xl md:text-6xl font-black tracking-tight leading-[1.1]">
+                Secure Your <span className="text-gradient">Bags</span> <br />
+                with Claude <span className="relative inline-block">
+                  AI.
+                  <motion.div 
+                    initial={{ width: 0 }}
+                    animate={{ width: '100%' }}
+                    transition={{ delay: 0.5, duration: 0.8 }}
+                    className="absolute -bottom-2 left-0 h-1 bg-gradient-to-r from-primary to-secondary rounded-full"
+                  />
+                </span>
+              </h1>
+              
+              <p className="text-white/40 max-w-xl text-base md:text-lg leading-relaxed">
+                Real-time security auditing for the Bags ecosystem. We track the 1% fee distributions and safe launch events using state-of-the-art AI analysis.
+              </p>
+            </div>
             </section>
 
             {/* Audit Search */}
