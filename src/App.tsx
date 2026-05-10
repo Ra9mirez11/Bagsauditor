@@ -5,8 +5,7 @@ import {
   Search, 
   Cpu, 
   CheckCircle2,
-  MessageSquare,
-  Send,
+  CheckCircle2,
   Zap,
   AlertTriangle,
   ShieldAlert,
@@ -87,9 +86,6 @@ const App = () => {
   const [isAuditing, setIsAuditing] = useState(false);
   const [auditResult, setAuditResult] = useState<TokenAudit | null>(null);
   const [feed, setFeed] = useState<any[]>([]);
-  const [chatMessages, setChatMessages] = useState<any[]>([]);
-  const [currentMessage, setCurrentMessage] = useState('');
-  const [isSending, setIsSending] = useState(false);
 
   useEffect(() => {
     fetchFeed();
@@ -121,44 +117,11 @@ const App = () => {
     }
   };
 
-  const sendChatMessage = async () => {
-    if (!currentMessage || !auditResult) return;
-    
-    const userMsg = { role: 'user', content: currentMessage };
-    setChatMessages(prev => [...prev, userMsg]);
-    setCurrentMessage('');
-    setIsSending(true);
-
-    try {
-      const res = await fetch('/api/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          message: currentMessage,
-          context: auditResult
-        })
-      });
-      
-      if (res.ok) {
-        const data = await res.json();
-        setChatMessages(prev => [...prev, { role: 'ai', content: data.reply }]);
-      } else {
-        const errorData = await res.json();
-        throw new Error(errorData.error || 'API failure');
-      }
-    } catch (e: any) {
-      setChatMessages(prev => [...prev, { role: 'ai', content: `CRITICAL ERROR: ${e.message}` }]);
-    } finally {
-      setIsSending(false);
-    }
-  };
-
   const runAudit = async (forcedMint?: string) => {
     const mint = (forcedMint || searchQuery).trim();
     if (!mint) return;
     setIsAuditing(true);
     setAuditResult(null);
-    setChatMessages([]);
     
     try {
       const response = await fetch('/api/audit', {
