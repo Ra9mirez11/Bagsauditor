@@ -24,8 +24,11 @@ export default async function handler(
 
   try {
     const bagsService = new BagsService(process.env.BAGS_API_KEY || 'DEMO');
+    console.log(`Auditing mint: ${token_mint}`);
     const tokenData = await bagsService.auditToken(token_mint);
+    console.log("Token data fetched successfully");
     const claimEvents = await bagsService.getClaimEvents(token_mint);
+    console.log(`Claim events fetched: ${claimEvents.length}`);
 
     const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
@@ -44,8 +47,7 @@ export default async function handler(
             Provide 3 security insights about liquidity, creators, and fee distribution.
             Return ONLY a valid JSON object: { "insights": ["...", "...", "..."], "recommendation": "SAFE" | "CAUTION" | "DANGER" }`
           }
-        ],
-        response_format: { type: "json_object" }
+        ]
       })
     });
 

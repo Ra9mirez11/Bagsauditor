@@ -1,7 +1,7 @@
 import { BagsSDK } from "@bagsfm/bags-sdk";
 import { PublicKey, Connection } from "@solana/web3.js";
 
-const SOLANA_RPC_URL = "https://api.mainnet-beta.solana.com";
+const SOLANA_RPC_URL = process.env.SOLANA_RPC_URL || "https://api.mainnet-beta.solana.com";
 
 export interface BagsToken {
   mint: string;

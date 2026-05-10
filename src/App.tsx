@@ -10,7 +10,9 @@ import {
   Send,
   Zap,
   AlertTriangle,
-  ShieldAlert
+  ShieldAlert,
+  ExternalLink,
+  Github
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
@@ -22,12 +24,6 @@ import {
   Tooltip, 
   ResponsiveContainer 
 } from 'recharts';
-
-const GithubIcon = ({ className }: { className?: string }) => (
-  <svg viewBox="0 0 16 16" fill="currentColor" className={className} aria-hidden="true">
-    <path d="M8 0c4.42 0 8 3.58 8 8a8.013 8.013 0 0 1-5.45 7.59c-.4.08-.55-.17-.55-.38 0-.27.01-1.13.01-2.2 0-.75-.25-1.23-.54-1.48 1.78-.2 3.65-.88 3.65-3.95 0-.88-.31-1.59-.82-2.15.08-.2.36-1.02-.08-2.12 0 0-.67-.22-2.2.82-.64-.18-1.32-.27-2-.27-.68 0-1.36.09-2 .27-1.53-1.03-2.2-.82-2.2-.82-.44 1.1-.16 1.92-.08 2.12-.51.56-.82 1.28-.82 2.15 0 3.06 1.86 3.75 3.64 3.95-.23.2-.44.55-.51 1.07-.46.21-1.61.55-2.33-.66-.15-.24-.6-.83-1.23-.82-.67.01-.27.38.01.53.34.19.73.9.82 1.13.16.45.68 1.31 2.69.94 0 .67.01 1.3.01 1.49 0 .21-.15.45-.55.38A7.995 7.995 0 0 1 0 8c0-4.42 3.58-8 8-8Z"></path>
-  </svg>
-);
 
 const SpotlightCard = ({ children, className = "" }: { children: React.ReactNode, className?: string }) => {
   const [position, setPosition] = useState({ x: 0, y: 0 });
@@ -103,7 +99,6 @@ const App = () => {
         setFeed(fallbackData);
       }
     } catch (e) {
-      console.warn("Feed fetch failed, using fallback");
       setFeed(fallbackData);
     }
   };
@@ -141,7 +136,7 @@ const App = () => {
   };
 
   const runAudit = async (forcedMint?: string) => {
-    const mint = forcedMint || searchQuery;
+    const mint = (forcedMint || searchQuery).trim();
     if (!mint) return;
     setIsAuditing(true);
     setAuditResult(null);
@@ -175,10 +170,10 @@ const App = () => {
       setChatMessages(prev => [...prev, { role: 'ai', content: `AUDIT FAILED: ${error.message}` }]);
     } finally {
       setIsAuditing(false);
-      const element = document.getElementById('results-section');
-      if (element) {
-        element.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }
+      setTimeout(() => {
+        const element = document.getElementById('results-section');
+        if (element) element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 100);
     }
   };
 
@@ -214,56 +209,49 @@ const App = () => {
           loop
           muted
           playsInline
-          className="w-full h-full object-cover opacity-40"
+          className="w-full h-full object-cover opacity-30"
         >
           <source src="/bg-vortex.mp4" type="video/mp4" />
         </video>
-        <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-black/80" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-black" />
       </div>
 
       {/* Navigation */}
       <nav className="fixed top-0 w-full z-50 glass border-b-white/5 px-6 py-4">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center shadow-[0_0_20px_rgba(0,245,255,0.3)]">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center shadow-[0_0_20px_rgba(0,245,255,0.4)]">
               <ShieldCheck className="text-black w-6 h-6" />
             </div>
             <div>
-              <span className="text-xl font-black tracking-tighter text-white">BAGS<span className="text-primary">AUDITOR</span></span>
+              <span className="text-xl font-black tracking-tighter text-white uppercase">Bags<span className="text-primary">Auditor</span></span>
               <div className="flex items-center gap-2">
-                <span className="text-[10px] text-primary font-bold uppercase tracking-widest">Sentinel AI v2</span>
+                <span className="text-[10px] text-primary font-bold uppercase tracking-[0.2em]">Hackathon Sentinel</span>
               </div>
             </div>
           </div>
           
-          <div className="hidden md:flex items-center gap-8 text-sm font-medium text-white/60">
+          <div className="hidden md:flex items-center gap-8 text-[10px] font-bold uppercase tracking-widest text-white/40">
             <button onClick={() => scrollToSection('search-section')} className="hover:text-primary transition-colors cursor-pointer bg-transparent border-none">Analyzer</button>
-            <button onClick={() => scrollToSection('features-section')} className="hover:text-primary transition-colors cursor-pointer bg-transparent border-none">Features</button>
-            <a href="https://docs.bags.fm/" target="_blank" rel="noreferrer" className="hover:text-primary transition-colors">Docs</a>
-            <div className="h-4 w-px bg-white/10" />
-            <a 
-              href="https://github.com/Ra9mirez11/Bagsauditor"
-              target="_blank"
-              rel="noreferrer"
-              className="flex items-center gap-2 bg-white/5 hover:bg-white/10 px-4 py-2 rounded-full border border-white/10 transition-all text-white no-underline group"
-            >
-              <GithubIcon className="w-4 h-4 group-hover:scale-110 transition-transform" />
-              <span>GitHub</span>
+            <button onClick={() => scrollToSection('features-section')} className="hover:text-primary transition-colors cursor-pointer bg-transparent border-none">Integration</button>
+            <a href="https://github.com/Ra9mirez11/Bagsauditor" target="_blank" rel="noreferrer" className="flex items-center gap-2 hover:text-primary transition-colors no-underline">
+              <Github className="w-4 h-4" />
+              GitHub
             </a>
           </div>
         </div>
       </nav>
 
       {/* Main Content */}
-      <main className="pt-32 pb-20 px-6">
-        <div className="max-w-7xl mx-auto flex flex-col lg:flex-row gap-12">
+      <main className="pt-40 pb-20 px-6">
+        <div className="max-w-7xl mx-auto flex flex-col lg:flex-row gap-16">
           
           {/* Sidebar Feed */}
           <div className="w-full lg:w-80 shrink-0">
-            <div className="glass p-6 rounded-3xl sticky top-32">
+            <div className="glass p-6 rounded-3xl sticky top-40 border-primary/10">
               <div className="flex items-center gap-2 mb-6">
-                <Zap className="w-4 h-4 text-secondary animate-pulse" />
-                <h3 className="font-bold text-sm uppercase tracking-widest text-white/60">Live Bags Activity</h3>
+                <Zap className="w-4 h-4 text-primary animate-pulse" />
+                <h3 className="font-bold text-[10px] uppercase tracking-[0.2em] text-primary">Live Activity</h3>
               </div>
               <div className="space-y-4 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
                 {feed.length > 0 ? feed.map((item, i) => (
@@ -272,20 +260,20 @@ const App = () => {
                     initial={{ opacity: 0, x: -10 }} 
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: i * 0.05 }}
-                    className="p-4 rounded-2xl bg-white/5 border border-white/5 hover:border-primary/30 hover:bg-white/10 transition-all cursor-pointer group"
+                    className="p-4 rounded-2xl bg-white/[0.02] border border-white/5 hover:border-primary/40 hover:bg-white/5 transition-all cursor-pointer group"
                     onClick={() => {
                       setSearchQuery(item.tokenMint);
                       runAudit(item.tokenMint);
                     }}
                   >
                     <div className="flex justify-between items-center mb-1">
-                      <span className="font-bold text-sm group-hover:text-primary transition-colors">{item.symbol}</span>
-                      <span className="text-[10px] text-white/30">{item.status || 'LIVE'}</span>
+                      <span className="font-black text-xs group-hover:text-primary transition-colors">{item.symbol}</span>
+                      <span className="text-[10px] text-white/20">{item.status || 'LIVE'}</span>
                     </div>
-                    <p className="text-xs text-white/40 truncate">{item.name}</p>
+                    <p className="text-[10px] text-white/40 truncate font-mono uppercase">{item.name}</p>
                   </motion.div>
                 )) : (
-                  <div className="text-center py-10 text-white/20 text-xs">No active launches found</div>
+                  <div className="text-center py-10 text-white/20 text-[10px] font-bold uppercase tracking-widest">No active launches</div>
                 )}
               </div>
             </div>
@@ -293,36 +281,35 @@ const App = () => {
 
           <div className="flex-1 min-w-0">
             {/* Hero Section */}
-            <section className="text-center mb-16">
-              <div className="flex flex-col items-center text-center space-y-6">
+            <section className="mb-20">
               <motion.div 
                 initial={{ opacity: 0, y: 10 }} 
                 animate={{ opacity: 1, y: 0 }}
-                className="px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-[10px] font-bold uppercase tracking-[0.2em]"
+                className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-[9px] font-black uppercase tracking-[0.3em] mb-8"
               >
-                AI-Powered Security Sentinel
+                <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+                Bags Hackathon 2026 Submission
               </motion.div>
               
-              <h1 className="text-5xl md:text-7xl font-black tracking-tight leading-[1.1]">
-                Secure Your <span className="text-gradient">Bags</span> <br />
-                with Claude AI.
+              <h1 className="text-6xl md:text-8xl font-black tracking-tighter leading-[0.9] mb-8 uppercase italic">
+                Secure Your <br />
+                <span className="text-gradient">Bags</span> AI.
               </h1>
               
-              <p className="text-white/40 max-w-xl text-lg leading-relaxed">
-                Real-time security auditing for the Bags ecosystem. We track 1% fee distributions and verify safe launch events using Claude 3.5 Sonnet.
+              <p className="text-white/40 max-w-2xl text-xl leading-relaxed font-medium">
+                Autonomous security sentinel leveraging Claude 3.5 Sonnet to verify 1% fee distributions, creator trust, and safe launch standards on the Bags ecosystem.
               </p>
-            </div>
             </section>
 
             {/* Audit Search */}
-            <section id="search-section" className="mb-16">
-              <motion.div className="glass p-2 rounded-3xl focus-within:border-primary/30 focus-within:shadow-[0_0_30px_rgba(0,245,255,0.1)] transition-all max-w-2xl mx-auto">
+            <section id="search-section" className="mb-20">
+              <motion.div className="glass p-2 rounded-3xl focus-within:border-primary/40 focus-within:shadow-[0_0_40px_rgba(0,245,255,0.15)] transition-all max-w-2xl">
                 <div className="flex items-center gap-2">
                   <div className="pl-4"><Search className="w-5 h-5 text-white/40" /></div>
                   <input 
                     type="text" 
-                    placeholder="Enter Token Mint Address..." 
-                    className="w-full bg-transparent border-none focus:ring-0 py-4 text-lg placeholder:text-white/20 text-white"
+                    placeholder="ENTER TOKEN MINT ADDRESS..." 
+                    className="w-full bg-transparent border-none focus:ring-0 py-5 text-xl placeholder:text-white/10 text-white font-mono uppercase tracking-tighter"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     onKeyDown={(e) => e.key === 'Enter' && runAudit()}
@@ -330,9 +317,9 @@ const App = () => {
                   <button 
                     onClick={() => runAudit()}
                     disabled={isAuditing}
-                    className="bg-primary hover:bg-primary/80 text-black px-8 py-4 rounded-2xl font-bold transition-all flex items-center gap-2 disabled:opacity-50"
+                    className="bg-primary hover:bg-primary/80 text-black px-10 py-5 rounded-2xl font-black uppercase tracking-widest transition-all flex items-center gap-2 disabled:opacity-50"
                   >
-                    {isAuditing ? <><div className="w-4 h-4 border-2 border-black/20 border-t-black rounded-full animate-spin" /><span>Auditing...</span></> : <span>Audit Now</span>}
+                    {isAuditing ? <div className="w-4 h-4 border-2 border-black/20 border-t-black rounded-full animate-spin" /> : <span>Audit</span>}
                   </button>
                 </div>
               </motion.div>
@@ -344,71 +331,70 @@ const App = () => {
                 <div id="results-section">
                   <motion.div initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                     <div className="relative group overflow-hidden rounded-3xl p-[1px]">
-                      <div className="absolute inset-0 bg-gradient-to-r from-primary via-secondary to-accent animate-border-flow" />
+                      <div className="absolute inset-0 bg-gradient-to-r from-primary via-secondary to-accent animate-border-flow opacity-70" />
                       <div className="relative glass p-8 rounded-3xl flex flex-col items-center justify-center text-center bg-black h-full">
-                        <div className="text-xs font-bold text-white/40 uppercase mb-4 tracking-widest">Safety Score</div>
-                        <div className={`text-7xl font-bold ${auditResult.safetyScore > 80 ? 'text-success' : auditResult.safetyScore > 50 ? 'text-warning' : 'text-danger'}`}>{auditResult.safetyScore}</div>
-                        <div className="text-[10px] font-medium mt-4 text-white/60 uppercase tracking-widest">Verified by Claude-3.5</div>
+                        <div className="text-[10px] font-black text-white/30 uppercase mb-4 tracking-[0.3em]">Security Index</div>
+                        <div className={`text-8xl font-black tracking-tighter ${auditResult.safetyScore > 80 ? 'text-success' : auditResult.safetyScore > 50 ? 'text-warning' : 'text-danger'}`}>{auditResult.safetyScore}</div>
+                        <div className="text-[9px] font-black mt-6 text-white/40 uppercase tracking-[0.4em]">Powered by Claude 3.5</div>
                       </div>
                     </div>
-                    <div className="md:col-span-2 glass p-8 rounded-3xl border-white/5">
-                      <div className="flex justify-between items-start mb-8">
+                    <div className="md:col-span-2 glass p-10 rounded-3xl border-white/5">
+                      <div className="flex justify-between items-start mb-10">
                         <div>
-                          <h3 className="text-3xl font-black mb-1">{auditResult.name}</h3>
-                          <p className="text-primary font-mono text-sm font-bold">${auditResult.symbol}</p>
+                          <h3 className="text-4xl font-black mb-2 uppercase tracking-tighter italic">{auditResult.name}</h3>
+                          <div className="flex items-center gap-3">
+                            <p className="text-primary font-mono text-sm font-black tracking-widest">${auditResult.symbol}</p>
+                            <div className="w-1 h-1 rounded-full bg-white/20" />
+                            <p className="text-white/30 font-mono text-[10px]">{auditResult.mint.substring(0, 8)}...{auditResult.mint.substring(36)}</p>
+                          </div>
                         </div>
-                        <div className="flex gap-2">
-                          <span className={`px-4 py-1.5 rounded-full bg-white/5 border border-white/10 text-xs font-bold uppercase tracking-wider ${getRecommendationColor(auditResult.recommendation)}`}>
-                            {auditResult.recommendation}
-                          </span>
+                        <div className={`px-5 py-2 rounded-full bg-white/5 border border-white/10 text-[10px] font-black uppercase tracking-[0.2em] ${getRecommendationColor(auditResult.recommendation)}`}>
+                          {auditResult.recommendation}
                         </div>
                       </div>
-                      <div className="space-y-4">
-                        {auditResult.vulnerabilities.length > 0 ? auditResult.vulnerabilities.map((v, i) => (
-                          <div key={i} className="flex items-center gap-3 text-white/80 group">
-                            <div className="shrink-0">{getRecommendationIcon(auditResult.recommendation)}</div>
-                            <span className="text-sm md:text-base">{v}</span>
+                      <div className="space-y-5">
+                        {auditResult.vulnerabilities.map((v, i) => (
+                          <div key={i} className="flex items-start gap-4 text-white/70 group">
+                            <div className="mt-1">{getRecommendationIcon(auditResult.recommendation)}</div>
+                            <span className="text-base font-medium leading-relaxed">{v}</span>
                           </div>
-                        )) : (
-                          <div className="text-white/40 italic text-sm">No specific vulnerabilities flagged.</div>
-                        )}
+                        ))}
                       </div>
                     </div>
                   </motion.div>
 
                   {/* Fee Dashboard Section */}
-                  <motion.div initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} className="glass p-8 rounded-3xl mb-8 border border-white/5">
-                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
+                  <motion.div initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} className="glass p-10 rounded-3xl mb-8 border border-white/5">
+                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-10">
                       <div>
-                        <h4 className="text-2xl font-bold">Fee Distribution Dashboard</h4>
-                        <p className="text-white/40 text-sm font-medium">On-chain transparency for the 1% creator fee</p>
+                        <h4 className="text-3xl font-black uppercase tracking-tighter italic">Fee Network Analytics</h4>
+                        <p className="text-white/30 text-xs font-bold uppercase tracking-widest mt-2">Bags State Program | 1% Creator Revenue Tracking</p>
                       </div>
                       <div className="flex gap-2 bg-white/5 p-1 rounded-xl border border-white/10">
-                        <span className="px-3 py-1 bg-primary/20 text-primary text-[10px] font-bold rounded-lg uppercase">Live Data</span>
-                        <span className="px-3 py-1 text-white/40 text-[10px] font-bold rounded-lg uppercase">Recent Events</span>
+                        <span className="px-4 py-1.5 bg-primary/20 text-primary text-[9px] font-black rounded-lg uppercase tracking-widest">Real-Time</span>
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-                      <div className="p-5 rounded-2xl bg-white/[0.03] border border-white/5 hover:border-primary/30 transition-all group">
-                        <div className="text-[10px] text-white/40 uppercase font-black mb-1 tracking-widest">Total Claims</div>
-                        <div className="text-xl font-mono text-white group-hover:text-primary transition-colors">{(auditResult.claimEvents?.reduce((acc, curr) => acc + curr.amount, 0) || 0).toFixed(2)} SOL</div>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-10">
+                      <div className="p-6 rounded-2xl bg-white/[0.02] border border-white/5 hover:border-primary/30 transition-all group">
+                        <div className="text-[9px] text-white/30 uppercase font-black mb-2 tracking-[0.2em]">Total Revenue</div>
+                        <div className="text-2xl font-mono text-white group-hover:text-primary transition-colors">{(auditResult.claimEvents?.reduce((acc, curr) => acc + curr.amount, 0) || 0).toFixed(2)} SOL</div>
                       </div>
-                      <div className="p-5 rounded-2xl bg-white/[0.03] border border-white/5 hover:border-secondary/30 transition-all group">
-                        <div className="text-[10px] text-white/40 uppercase font-black mb-1 tracking-widest">Community</div>
-                        <div className="text-xl font-mono text-secondary">{(auditResult.claimEvents?.filter(e => !e.isCreator).reduce((acc, curr) => acc + curr.amount, 0) || 0).toFixed(2)} SOL</div>
+                      <div className="p-6 rounded-2xl bg-white/[0.02] border border-white/5 hover:border-secondary/30 transition-all group">
+                        <div className="text-[9px] text-white/30 uppercase font-black mb-2 tracking-[0.2em]">Community</div>
+                        <div className="text-2xl font-mono text-secondary">{(auditResult.claimEvents?.filter(e => !e.isCreator).reduce((acc, curr) => acc + curr.amount, 0) || 0).toFixed(2)} SOL</div>
                       </div>
-                      <div className="p-5 rounded-2xl bg-white/[0.03] border border-white/5 hover:border-success/30 transition-all group">
-                        <div className="text-[10px] text-white/40 uppercase font-black mb-1 tracking-widest">Avg Size</div>
-                        <div className="text-xl font-mono text-success">{(auditResult.claimEvents?.length ? (auditResult.claimEvents.reduce((acc, curr) => acc + curr.amount, 0) / auditResult.claimEvents.length) : 0).toFixed(3)} SOL</div>
+                      <div className="p-6 rounded-2xl bg-white/[0.02] border border-white/5 hover:border-success/30 transition-all group">
+                        <div className="text-[9px] text-white/30 uppercase font-black mb-2 tracking-[0.2em]">Avg Claim</div>
+                        <div className="text-2xl font-mono text-success">{(auditResult.claimEvents?.length ? (auditResult.claimEvents.reduce((acc, curr) => acc + curr.amount, 0) / auditResult.claimEvents.length) : 0).toFixed(3)} SOL</div>
                       </div>
-                      <div className="p-5 rounded-2xl bg-white/[0.03] border border-white/5 hover:border-accent/30 transition-all group">
-                        <div className="text-[10px] text-white/40 uppercase font-black mb-1 tracking-widest">Creator Share</div>
-                        <div className="text-xl font-mono text-accent">{(auditResult.claimEvents?.filter(e => e.isCreator).reduce((acc, curr) => acc + curr.amount, 0) || 0).toFixed(2)} SOL</div>
+                      <div className="p-6 rounded-2xl bg-white/[0.02] border border-white/5 hover:border-accent/30 transition-all group">
+                        <div className="text-[9px] text-white/30 uppercase font-black mb-2 tracking-[0.2em]">Creator Net</div>
+                        <div className="text-2xl font-mono text-accent">{(auditResult.claimEvents?.filter(e => e.isCreator).reduce((acc, curr) => acc + curr.amount, 0) || 0).toFixed(2)} SOL</div>
                       </div>
                     </div>
                     
-                    <div className="h-[300px] w-full mt-4">
+                    <div className="h-[350px] w-full mt-4">
                       <ResponsiveContainer width="100%" height="100%">
                         <AreaChart data={auditResult.claimEvents}>
                           <defs>
@@ -426,19 +412,18 @@ const App = () => {
                           />
                           <YAxis stroke="#ffffff20" fontSize={10} tickFormatter={(v) => `${v}S`} />
                           <Tooltip 
-                            contentStyle={{ backgroundColor: '#09090b', border: '1px solid #ffffff10', borderRadius: '16px', boxShadow: '0 10px 30px -10px rgba(0,0,0,0.5)' }}
-                            itemStyle={{ fontSize: '12px', fontWeight: 'bold' }}
+                            contentStyle={{ backgroundColor: '#000', border: '1px solid #ffffff10', borderRadius: '16px' }}
+                            itemStyle={{ fontSize: '12px', fontWeight: 'bold', color: '#00F5FF' }}
                             labelStyle={{ color: '#ffffff40', fontSize: '10px', marginBottom: '4px' }}
-                            labelFormatter={(label) => `Time: ${new Date(label).toLocaleString()}`}
                           />
                           <Area 
-                            name="Claim Amount"
+                            name="SOL Claimed"
                             type="monotone" 
                             dataKey="amount" 
                             stroke="#00F5FF" 
                             fill="url(#colorAmount)" 
-                            strokeWidth={3} 
-                            animationDuration={2000}
+                            strokeWidth={4} 
+                            animationDuration={2500}
                           />
                         </AreaChart>
                       </ResponsiveContainer>
@@ -446,37 +431,34 @@ const App = () => {
                   </motion.div>
 
                   {/* AI Researcher Chat */}
-                  <motion.div initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} className="glass rounded-3xl overflow-hidden mb-20 border border-primary/20 bg-black/40">
-                    <div className="bg-primary/5 p-4 border-b border-white/5 flex items-center justify-between">
+                  <motion.div initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} className="glass rounded-3xl overflow-hidden mb-32 border-primary/20 bg-black/60">
+                    <div className="bg-primary/5 p-5 border-b border-white/5 flex items-center justify-between">
                       <div className="flex items-center gap-3">
                         <MessageSquare className="w-5 h-5 text-primary" />
-                        <h4 className="font-bold text-sm uppercase tracking-widest text-primary">Claude AI Researcher</h4>
+                        <h4 className="font-black text-[10px] uppercase tracking-[0.3em] text-primary">Claude Security Intelligence</h4>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <div className="w-2 h-2 rounded-full bg-success animate-pulse" />
-                        <span className="text-[10px] font-bold text-white/40 uppercase">Connected</span>
-                      </div>
+                      <div className="px-2 py-0.5 rounded bg-primary/20 text-primary text-[8px] font-black uppercase tracking-widest">Active session</div>
                     </div>
-                    <div className="h-80 overflow-y-auto p-6 space-y-4 custom-scrollbar">
+                    <div className="h-96 overflow-y-auto p-8 space-y-6 custom-scrollbar">
                       {chatMessages.length === 0 && (
-                        <div className="text-center py-10">
-                          <Cpu className="w-10 h-10 text-white/10 mx-auto mb-4" />
-                          <p className="text-white/20 text-sm">Ask Claude about this token's security or fee structure...</p>
+                        <div className="text-center py-20">
+                          <ShieldCheck className="w-12 h-12 text-white/5 mx-auto mb-6" />
+                          <p className="text-white/20 text-sm font-bold uppercase tracking-widest">Ask Claude about token risks or fee structure</p>
                         </div>
                       )}
                       {chatMessages.map((msg, i) => (
                         <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                          <div className={`max-w-[85%] p-4 rounded-2xl text-sm ${msg.role === 'user' ? 'bg-primary text-black font-bold' : 'bg-white/5 border border-white/10 text-white/90 leading-relaxed'}`}>
+                          <div className={`max-w-[80%] p-5 rounded-2xl text-sm ${msg.role === 'user' ? 'bg-primary text-black font-black italic' : 'bg-white/[0.03] border border-white/10 text-white/80 leading-relaxed shadow-xl'}`}>
                             {msg.content}
                           </div>
                         </div>
                       ))}
                     </div>
-                    <div className="p-4 bg-black/60 border-t border-white/5 flex gap-2">
+                    <div className="p-6 bg-black border-t border-white/5 flex gap-3">
                       <input 
                         type="text" 
-                        placeholder="Type your question..." 
-                        className="flex-1 bg-white/5 border-white/10 rounded-xl px-4 py-3 text-sm focus:ring-1 focus:ring-primary focus:border-primary outline-none transition-all"
+                        placeholder="ASK ABOUT CREATOR TRUST, LIQUIDITY, OR FEES..." 
+                        className="flex-1 bg-white/[0.02] border-white/10 rounded-xl px-5 py-4 text-xs font-bold uppercase tracking-widest focus:ring-1 focus:ring-primary focus:border-primary outline-none transition-all"
                         value={currentMessage}
                         onChange={(e) => setCurrentMessage(e.target.value)}
                         onKeyDown={(e) => e.key === 'Enter' && sendChatMessage()}
@@ -484,7 +466,7 @@ const App = () => {
                       <button 
                         onClick={sendChatMessage}
                         disabled={isSending || !currentMessage}
-                        className="bg-primary hover:bg-primary/80 text-black px-6 rounded-xl disabled:opacity-50 transition-all flex items-center justify-center"
+                        className="bg-primary hover:bg-primary/80 text-black px-8 rounded-xl disabled:opacity-50 transition-all flex items-center justify-center font-black"
                       >
                         {isSending ? <div className="w-5 h-5 border-2 border-black/20 border-t-black rounded-full animate-spin" /> : <Send className="w-5 h-5" />}
                       </button>
@@ -494,28 +476,28 @@ const App = () => {
               )}
             </AnimatePresence>
 
-            {/* Features Grid */}
+            {/* Features / Submission Requirements Grid */}
             <section id="features-section" className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              <SpotlightCard className="p-8 group">
-                <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform text-primary shadow-[0_0_20px_rgba(0,245,255,0.1)]">
-                  <Terminal />
+              <SpotlightCard className="p-10 group border-primary/10">
+                <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mb-8 group-hover:scale-110 transition-transform text-primary">
+                  <Cpu className="w-7 h-7" />
                 </div>
-                <h4 className="text-xl font-bold mb-3">AI Security Audit</h4>
-                <p className="text-white/40 leading-relaxed text-sm">Deep-dive analysis of token dynamics using state-of-the-art LLMs.</p>
+                <h4 className="text-2xl font-black mb-4 uppercase italic">Bags Integration</h4>
+                <p className="text-white/40 leading-relaxed text-sm font-medium">Full integration with Bags State Program via API and SDK to track on-chain creator fee distributions and lifetime revenue metrics.</p>
               </SpotlightCard>
-              <SpotlightCard className="p-8 group">
-                <div className="w-12 h-12 rounded-2xl bg-secondary/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform text-secondary shadow-[0_0_20px_rgba(112,0,255,0.1)]">
-                  <BarChart3 />
+              <SpotlightCard className="p-10 group border-secondary/10">
+                <div className="w-14 h-14 rounded-2xl bg-secondary/10 flex items-center justify-center mb-8 group-hover:scale-110 transition-transform text-secondary">
+                  <ShieldCheck className="w-7 h-7" />
                 </div>
-                <h4 className="text-xl font-bold mb-3">Fee Transparency</h4>
-                <p className="text-white/40 leading-relaxed text-sm">Real-time monitoring of the 1% creator fee distribution network.</p>
+                <h4 className="text-2xl font-black mb-4 uppercase italic">Security Track</h4>
+                <p className="text-white/40 leading-relaxed text-sm font-medium">Solving the problem of trust in social finance by providing autonomous audits for newly launched creator tokens on the Bags platform.</p>
               </SpotlightCard>
-              <SpotlightCard className="p-8 group">
-                <div className="w-12 h-12 rounded-2xl bg-accent/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform text-accent shadow-[0_0_20px_rgba(255,0,229,0.1)]">
-                  <Cpu />
+              <SpotlightCard className="p-10 group border-accent/10">
+                <div className="w-14 h-14 rounded-2xl bg-accent/10 flex items-center justify-center mb-8 group-hover:scale-110 transition-transform text-accent">
+                  <Terminal className="w-7 h-7" />
                 </div>
-                <h4 className="text-xl font-bold mb-3">Bags Integration</h4>
-                <p className="text-white/40 leading-relaxed text-sm">Direct integration with Bags State Program for authentic data.</p>
+                <h4 className="text-2xl font-black mb-4 uppercase italic">Open Source</h4>
+                <p className="text-white/40 leading-relaxed text-sm font-medium">Built with transparency in mind. The entire codebase is open-source and ready for community contributions to enhance the Bags ecosystem security.</p>
               </SpotlightCard>
             </section>
 
@@ -524,16 +506,25 @@ const App = () => {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-white/5 py-12 px-6 bg-black/80">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
-          <div className="flex items-center gap-4 opacity-40 hover:opacity-100 transition-opacity">
-            <ShieldCheck className="w-5 h-5 text-primary" />
-            <span className="text-xs font-bold tracking-[0.2em] uppercase">Bags Hackathon 2026</span>
+      <footer className="border-t border-white/5 py-20 px-6 bg-black">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-12">
+          <div className="flex items-center gap-4 group cursor-help">
+            <ShieldCheck className="w-6 h-6 text-primary" />
+            <span className="text-xs font-black tracking-[0.4em] uppercase text-white/40 group-hover:text-primary transition-colors">The Bags Hackathon 2026 Submission</span>
           </div>
-          <div className="flex gap-8 text-[10px] font-black text-white/30 uppercase tracking-[0.3em]">
-            <a href="#" className="hover:text-primary transition-colors no-underline">Terms</a>
-            <a href="#" className="hover:text-primary transition-colors no-underline">Privacy</a>
-            <a href="https://docs.bags.fm/" className="hover:text-primary transition-colors no-underline">API Docs</a>
+          
+          <div className="flex flex-wrap justify-center gap-10">
+            <a href="https://bagsauditor.vercel.app/" target="_blank" rel="noreferrer" className="text-[10px] font-black text-white/20 uppercase tracking-[0.3em] hover:text-primary transition-colors no-underline flex items-center gap-2">
+              <ExternalLink className="w-3 h-3" />
+              Live Site
+            </a>
+            <a href="https://github.com/Ra9mirez11/Bagsauditor" target="_blank" rel="noreferrer" className="text-[10px] font-black text-white/20 uppercase tracking-[0.3em] hover:text-primary transition-colors no-underline flex items-center gap-2">
+              <Github className="w-3 h-3" />
+              GitHub Repo
+            </a>
+            <a href="https://docs.bags.fm/" target="_blank" rel="noreferrer" className="text-[10px] font-black text-white/20 uppercase tracking-[0.3em] hover:text-primary transition-colors no-underline">
+              Bags API
+            </a>
           </div>
         </div>
       </footer>
