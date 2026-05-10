@@ -128,20 +128,11 @@ const App = () => {
         const data = await res.json();
         setChatMessages(prev => [...prev, { role: 'ai', content: data.reply }]);
       } else {
-        throw new Error('API unavailable');
+        const errorData = await res.json();
+        throw new Error(errorData.error || 'API failure');
       }
-    } catch (e) {
-      // Intelligent Simulation Fallback
-      setTimeout(() => {
-        const responses = [
-          "Analyzing the 1% fee structure... The distribution looks standard for Bags V2 contracts.",
-          "I've scanned the liquidity locks. No immediate rug-pull vectors detected in the current state.",
-          "The creator payouts are consistent with the volume. Risk level remains 'Low' for this epoch.",
-          "Security Sentinel check complete: Contract matches the verified Bags template."
-        ];
-        const randomReply = responses[Math.floor(Math.random() * responses.length)];
-        setChatMessages(prev => [...prev, { role: 'ai', content: `[SIMULATION MODE] ${randomReply}` }]);
-      }, 1000);
+    } catch (e: any) {
+      setChatMessages(prev => [...prev, { role: 'ai', content: `CRITICAL ERROR: ${e.message}` }]);
     } finally {
       setIsSending(false);
     }
@@ -178,29 +169,8 @@ const App = () => {
           throw new Error(errData.error || 'Backend failure');
         }
       } catch (error: any) {
-        console.warn("Backend failed, falling back to local simulation:", error);
-        
-        // Purely local simulation to avoid 401 on client
-        const dummyEvents = Array.from({ length: 12 }).map((_, i) => ({
-          timestamp: Date.now() - (12 - i) * 24 * 60 * 60 * 1000,
-          amount: Math.random() * 5 + 1
-        }));
-
-        setAuditResult({
-          name: mint.length > 15 ? 'SOLANA TOKEN' : mint.toUpperCase(),
-          symbol: mint.substring(0, 4).toUpperCase(),
-          safetyScore: 88,
-          riskLevel: 'Low',
-          vulnerabilities: [
-            "Verified Liquidity Pool (Bags V2)",
-            "No malicious mint/freeze authority detected",
-            "Fee distribution (1%) matches community standards",
-            "Creator identity verified via Bags Sentinel"
-          ],
-          ownerStatus: 'Verified Standard',
-          liquidityStatus: '1.42 SOL Generated',
-          claimEvents: dummyEvents
-        });
+        console.error("Audit failed:", error);
+        setChatMessages(prev => [...prev, { role: 'ai', content: `AUDIT FAILED: ${error.message}` }]);
       } finally {
         setIsAuditing(false);
         window.scrollTo({ top: 400, behavior: 'smooth' });
