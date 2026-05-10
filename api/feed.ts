@@ -1,5 +1,5 @@
 import { VercelRequest, VercelResponse } from '@vercel/node';
-import { BagsService } from '../src/services/bags';
+import { BagsService } from '../src/services/bags.js';
 
 export default async function handler(
   request: VercelRequest,
