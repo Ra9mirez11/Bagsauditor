@@ -447,48 +447,7 @@ const App = () => {
                     </div>
                   </motion.div>
 
-                  {/* AI Researcher Chat */}
-                  <motion.div initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} className="glass rounded-3xl overflow-hidden mb-32 border-primary/20 bg-black/60">
-                    <div className="bg-primary/5 p-5 border-b border-white/5 flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <MessageSquare className="w-5 h-5 text-primary" />
-                        <h4 className="font-black text-[10px] uppercase tracking-[0.3em] text-primary">Neural Security Intelligence</h4>
-                      </div>
-                      <div className="px-2 py-0.5 rounded bg-primary/20 text-primary text-[8px] font-black uppercase tracking-widest">Active session</div>
-                    </div>
-                    <div className="h-96 overflow-y-auto p-8 space-y-6 custom-scrollbar">
-                      {chatMessages.length === 0 && (
-                        <div className="text-center py-20">
-                          <ShieldCheck className="w-12 h-12 text-white/5 mx-auto mb-6" />
-                          <p className="text-white/20 text-sm font-bold uppercase tracking-widest">Ask AI about token risks or fee structure</p>
-                        </div>
-                      )}
-                      {chatMessages.map((msg, i) => (
-                        <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                          <div className={`max-w-[80%] p-5 rounded-2xl text-sm ${msg.role === 'user' ? 'bg-primary text-black font-black italic' : 'bg-white/[0.03] border border-white/10 text-white/80 leading-relaxed shadow-xl'}`}>
-                            {msg.content}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                    <div className="p-6 bg-black border-t border-white/5 flex gap-3">
-                      <input 
-                        type="text" 
-                        placeholder="ASK ABOUT CREATOR TRUST, LIQUIDITY, OR FEES..." 
-                        className="flex-1 bg-white/[0.02] border-white/10 rounded-xl px-5 py-4 text-xs font-bold uppercase tracking-widest focus:ring-1 focus:ring-primary focus:border-primary outline-none transition-all"
-                        value={currentMessage}
-                        onChange={(e) => setCurrentMessage(e.target.value)}
-                        onKeyDown={(e) => e.key === 'Enter' && sendChatMessage()}
-                      />
-                      <button 
-                        onClick={sendChatMessage}
-                        disabled={isSending || !currentMessage}
-                        className="bg-primary hover:bg-primary/80 text-black px-8 rounded-xl disabled:opacity-50 transition-all flex items-center justify-center font-black"
-                      >
-                        {isSending ? <div className="w-5 h-5 border-2 border-black/20 border-t-black rounded-full animate-spin" /> : <Send className="w-5 h-5" />}
-                      </button>
-                    </div>
-                  </motion.div>
+
                 </div>
               )}
             </AnimatePresence>
