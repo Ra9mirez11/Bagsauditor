@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { 
   ShieldCheck, 
   Terminal, 
-  BarChart3, 
   Search, 
   Cpu, 
   CheckCircle2,
@@ -11,8 +10,7 @@ import {
   Zap,
   AlertTriangle,
   ShieldAlert,
-  ExternalLink,
-  Github
+  ExternalLink
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
@@ -54,6 +52,7 @@ const SpotlightCard = ({ children, className = "" }: { children: React.ReactNode
 };
 
 interface TokenAudit {
+  mint: string;
   name: string;
   symbol: string;
   safetyScore: number;
@@ -152,6 +151,7 @@ const App = () => {
       if (response.ok) {
         const data = await response.json();
         setAuditResult({
+          mint: mint,
           name: data.name,
           symbol: data.symbol,
           safetyScore: data.safetyScore,
@@ -235,7 +235,7 @@ const App = () => {
             <button onClick={() => scrollToSection('search-section')} className="hover:text-primary transition-colors cursor-pointer bg-transparent border-none">Analyzer</button>
             <button onClick={() => scrollToSection('features-section')} className="hover:text-primary transition-colors cursor-pointer bg-transparent border-none">Integration</button>
             <a href="https://github.com/Ra9mirez11/Bagsauditor" target="_blank" rel="noreferrer" className="flex items-center gap-2 hover:text-primary transition-colors no-underline">
-              <Github className="w-4 h-4" />
+              <GithubIcon className="w-4 h-4" />
               GitHub
             </a>
           </div>
@@ -519,7 +519,7 @@ const App = () => {
               Live Site
             </a>
             <a href="https://github.com/Ra9mirez11/Bagsauditor" target="_blank" rel="noreferrer" className="text-[10px] font-black text-white/20 uppercase tracking-[0.3em] hover:text-primary transition-colors no-underline flex items-center gap-2">
-              <Github className="w-3 h-3" />
+              <GithubIcon className="w-3 h-3" />
               GitHub Repo
             </a>
             <a href="https://docs.bags.fm/" target="_blank" rel="noreferrer" className="text-[10px] font-black text-white/20 uppercase tracking-[0.3em] hover:text-primary transition-colors no-underline">
