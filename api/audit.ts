@@ -1,6 +1,5 @@
 import { VercelRequest, VercelResponse } from '@vercel/node';
 import { BagsService } from '../src/services/bags';
-import { OpenRouter } from "@openrouter/sdk";
 
 export default async function handler(
   request: VercelRequest,
@@ -11,46 +10,66 @@ export default async function handler(
   }
 
   const { token_mint } = request.body;
-  const apiKey = process.env.ANTHROPIC_API_KEY;
+  
+  // Support multiple naming conventions for API keys
+  const apiKey = process.env.OPENROUTER_API_KEY || process.env.ANTHROPIC_API_KEY || process.env.AI_API_KEY;
 
   if (!token_mint) {
     return response.status(400).json({ error: 'token_mint is required' });
   }
 
   if (!apiKey) {
-    return response.status(500).json({ error: 'AI API key not configured' });
+    return response.status(500).json({ error: 'AI API key not configured. Please set OPENROUTER_API_KEY.' });
   }
 
   try {
-    // 1. Get Bags Data
     const bagsService = new BagsService(process.env.BAGS_API_KEY || 'DEMO');
     const tokenData = await bagsService.auditToken(token_mint);
     const claimEvents = await bagsService.getClaimEvents(token_mint);
 
-    // 2. Call Claude AI via OpenRouter SDK
-    const openrouter = new OpenRouter({ apiKey });
-    
-    const result = await openrouter.chat.send({
-      model: "nvidia/nemotron-3-super-120b-a12b:free",
-      messages: [
-        {
-          role: 'user',
-          content: `You are a security auditor for the Bags ecosystem on Solana. 
-          Analyze this token data and provide 3 concise security insights:
-          ${JSON.stringify(tokenData)}
-          
-          Return ONLY a JSON object: { "insights": ["...", "...", "..."], "recommendation": "SAFE" | "CAUTION" | "DANGER" }`
-        }
-      ]
+    const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+        "HTTP-Referer": "https://bagsauditor.vercel.app",
+        "X-Title": "Bags Auditor Sentinel"
+      },
+      body: JSON.stringify({
+        model: "anthropic/claude-3.5-sonnet", // Use a high-quality model
+        messages: [
+          {
+            role: 'user',
+            content: `Analyze this Bags Solana token data: ${JSON.stringify(tokenData)}.
+            Provide 3 security insights about liquidity, creators, and fee distribution.
+            Return ONLY a valid JSON object: { "insights": ["...", "...", "..."], "recommendation": "SAFE" | "CAUTION" | "DANGER" }`
+          }
+        ],
+        response_format: { type: "json_object" }
+      })
     });
 
-    const content = result.choices?.[0]?.message?.content || '{}';
+    if (!res.ok) {
+      const errorText = await res.text();
+      throw new Error(`OpenRouter Error (${res.status}): ${errorText}`);
+    }
+
+    const aiData = await res.json();
+    const content = aiData.choices?.[0]?.message?.content || '{}';
     
     let aiAnalysis;
     try {
-      aiAnalysis = JSON.parse(content.substring(content.indexOf('{'), content.lastIndexOf('}') + 1));
+      // Robust JSON extraction
+      const jsonStart = content.indexOf('{');
+      const jsonEnd = content.lastIndexOf('}') + 1;
+      if (jsonStart !== -1 && jsonEnd !== -1) {
+        aiAnalysis = JSON.parse(content.substring(jsonStart, jsonEnd));
+      } else {
+        throw new Error("No JSON found in response");
+      }
     } catch (e) {
-      aiAnalysis = { insights: ["AI Analysis failed to parse"], recommendation: "UNKNOWN" };
+      console.error("AI Parse Error:", content);
+      aiAnalysis = { insights: ["AI analysis was unreadable", "Manual check recommended", "Data verification required"], recommendation: "CAUTION" };
     }
 
     return response.status(200).json({

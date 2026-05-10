@@ -8,8 +8,9 @@ export default async function handler(
   try {
     const bagsService = new BagsService(process.env.BAGS_API_KEY || 'DEMO');
     const feed = await bagsService.getTokenLaunchFeed();
-    return response.status(200).json(feed);
+    return response.status(200).json(feed || []);
   } catch (error: any) {
-    return response.status(500).json({ error: error.message });
+    console.error("Feed API Error:", error);
+    return response.status(200).json([]); // Return empty array instead of 500 to keep UI stable
   }
 }
