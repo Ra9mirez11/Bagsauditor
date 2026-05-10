@@ -314,7 +314,7 @@ const App = () => {
               </h1>
               
               <p className="text-white/40 max-w-2xl text-xl leading-relaxed font-medium">
-                Autonomous security sentinel leveraging Claude 3.5 Sonnet to verify 1% fee distributions, creator trust, and safe launch standards on the Bags ecosystem.
+                Autonomous security sentinel leveraging Neural Intelligence to verify 1% fee distributions, creator trust, and safe launch standards on the Bags ecosystem.
               </p>
             </section>
 
@@ -352,7 +352,7 @@ const App = () => {
                       <div className="relative glass p-8 rounded-3xl flex flex-col items-center justify-center text-center bg-black h-full">
                         <div className="text-[10px] font-black text-white/30 uppercase mb-4 tracking-[0.3em]">Security Index</div>
                         <div className={`text-8xl font-black tracking-tighter ${auditResult.safetyScore > 80 ? 'text-success' : auditResult.safetyScore > 50 ? 'text-warning' : 'text-danger'}`}>{auditResult.safetyScore}</div>
-                        <div className="text-[9px] font-black mt-6 text-white/40 uppercase tracking-[0.4em]">Powered by Claude 3.5</div>
+                        <div className="text-[9px] font-black mt-6 text-white/40 uppercase tracking-[0.4em]">Powered by Bags AI Intelligence</div>
                       </div>
                     </div>
                     <div className="md:col-span-2 glass p-10 rounded-3xl border-white/5">
@@ -452,7 +452,7 @@ const App = () => {
                     <div className="bg-primary/5 p-5 border-b border-white/5 flex items-center justify-between">
                       <div className="flex items-center gap-3">
                         <MessageSquare className="w-5 h-5 text-primary" />
-                        <h4 className="font-black text-[10px] uppercase tracking-[0.3em] text-primary">Claude Security Intelligence</h4>
+                        <h4 className="font-black text-[10px] uppercase tracking-[0.3em] text-primary">Neural Security Intelligence</h4>
                       </div>
                       <div className="px-2 py-0.5 rounded bg-primary/20 text-primary text-[8px] font-black uppercase tracking-widest">Active session</div>
                     </div>
@@ -460,7 +460,7 @@ const App = () => {
                       {chatMessages.length === 0 && (
                         <div className="text-center py-20">
                           <ShieldCheck className="w-12 h-12 text-white/5 mx-auto mb-6" />
-                          <p className="text-white/20 text-sm font-bold uppercase tracking-widest">Ask Claude about token risks or fee structure</p>
+                          <p className="text-white/20 text-sm font-bold uppercase tracking-widest">Ask AI about token risks or fee structure</p>
                         </div>
                       )}
                       {chatMessages.map((msg, i) => (
