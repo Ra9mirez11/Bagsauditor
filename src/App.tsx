@@ -84,6 +84,29 @@ const App = () => {
   const [isAuditing, setIsAuditing] = useState(false);
   const [auditResult, setAuditResult] = useState<TokenAudit | null>(null);
   const [feed, setFeed] = useState<any[]>([]);
+  const [loadingFact, setLoadingFact] = useState('');
+
+  const facts = [
+    "Solana processes over 50,000 transactions per second.",
+    "Bags creators earn 1% lifetime fees on every trade.",
+    "Analyzing hardcoded 1% fee distribution protocols...",
+    "Scanning creator trust scores on Solana state programs...",
+    "Verifying liquidity lock-up periods for maximum safety.",
+    "Bags is the first SocialFi platform built on Solana State.",
+    "Cross-referencing token mints with known security patterns...",
+    "Neural Intelligence is interrogating the creator's wallet history..."
+  ];
+
+  useEffect(() => {
+    let interval: any;
+    if (isAuditing) {
+      setLoadingFact(facts[Math.floor(Math.random() * facts.length)]);
+      interval = setInterval(() => {
+        setLoadingFact(facts[Math.floor(Math.random() * facts.length)]);
+      }, 3500);
+    }
+    return () => clearInterval(interval);
+  }, [isAuditing]);
 
   useEffect(() => {
     fetchFeed();
@@ -304,6 +327,30 @@ const App = () => {
                   </button>
                 </div>
               </motion.div>
+              
+              <AnimatePresence>
+                {isAuditing && (
+                  <motion.div 
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 10 }}
+                    className="mt-6 flex flex-col items-center gap-3 text-center"
+                  >
+                    <div className="flex items-center gap-2">
+                      <div className="w-1.5 h-1.5 rounded-full bg-primary animate-ping" />
+                      <span className="text-[10px] font-black uppercase tracking-[0.3em] text-primary">Neural Analysis in Progress</span>
+                    </div>
+                    <motion.p 
+                      key={loadingFact}
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      className="text-white/40 text-xs font-medium max-w-md italic"
+                    >
+                      "{loadingFact}"
+                    </motion.p>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </section>
 
             {/* Audit Results */}
@@ -314,12 +361,12 @@ const App = () => {
                     <div className="relative group overflow-hidden rounded-3xl p-[1px]">
                       <div className="absolute inset-0 bg-gradient-to-r from-primary via-secondary to-accent animate-border-flow opacity-70" />
                       <div className="relative glass p-8 rounded-3xl flex flex-col items-center justify-center text-center bg-black h-full">
-                        <div className="absolute top-4 left-0 right-0 flex justify-center gap-4 text-[8px] font-black text-white/10 uppercase tracking-widest">
-                          <span>0% Danger</span>
-                          <span>•</span>
+                        <div className="absolute top-4 left-0 right-0 flex justify-center gap-4 text-[9px] font-black text-primary/60 uppercase tracking-widest">
+                          <span className="opacity-50">0% Danger</span>
+                          <span className="text-white/20">•</span>
                           <span>100% Safe</span>
                         </div>
-                        <div className="text-[10px] font-black text-white/30 uppercase mb-4 mt-4 tracking-[0.3em]">Security Index</div>
+                        <div className="text-[10px] font-black text-white/30 uppercase mb-4 mt-6 tracking-[0.3em]">Security Index</div>
                         <div className={`text-8xl font-black tracking-tighter ${auditResult.safetyScore > 80 ? 'text-success' : auditResult.safetyScore > 50 ? 'text-warning' : 'text-danger'}`}>{auditResult.safetyScore}</div>
                         <div className="text-[9px] font-black mt-6 text-white/40 uppercase tracking-[0.4em]">Powered by Bags AI Intelligence</div>
                       </div>
