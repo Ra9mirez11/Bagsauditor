@@ -12,6 +12,7 @@ import {
   ShieldAlert,
   ExternalLink
 } from 'lucide-react';
+import { Vortex } from './components/ui/vortex';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   AreaChart, 
@@ -75,7 +76,7 @@ interface TokenAudit {
   symbol: string;
   safetyScore: number;
   riskLevel: 'Low' | 'Medium' | 'High';
-  vulnerabilities: string[];
+  insights: string[];
   recommendation: 'SAFE' | 'CAUTION' | 'DANGER' | 'UNKNOWN';
   fees: number;
   claimEvents?: any[];
@@ -174,7 +175,7 @@ const App = () => {
           symbol: data.symbol,
           safetyScore: data.safetyScore,
           riskLevel: data.riskLevel,
-          vulnerabilities: data.vulnerabilities,
+          insights: data.insights || [],
           recommendation: data.recommendation,
           fees: data.fees,
           claimEvents: data.claimEvents
@@ -222,15 +223,13 @@ const App = () => {
     <div className="min-h-screen font-sans selection:bg-primary/30 text-white bg-black">
       {/* Background */}
       <div className="fixed inset-0 -z-10 overflow-hidden">
-        <video
-          autoPlay
-          loop
-          muted
-          playsInline
-          className="w-full h-full object-cover opacity-30"
-        >
-          <source src="/bg-vortex.mp4" type="video/mp4" />
-        </video>
+        <Vortex 
+          backgroundColor="black"
+          rangeY={800}
+          particleCount={500}
+          baseHue={220}
+          className="w-full h-full"
+        />
         <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-black" />
       </div>
 
@@ -371,7 +370,7 @@ const App = () => {
                         </div>
                       </div>
                       <div className="space-y-5">
-                        {auditResult.vulnerabilities.map((v, i) => (
+                        {auditResult.insights.map((v, i) => (
                           <div key={i} className="flex items-start gap-4 text-white/70 group">
                             <div className="mt-1">{getRecommendationIcon(auditResult.recommendation)}</div>
                             <span className="text-base font-medium leading-relaxed">{v}</span>
