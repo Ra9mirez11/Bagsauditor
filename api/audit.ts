@@ -82,6 +82,10 @@ export default async function handler(
     });
   } catch (error: any) {
     console.error("Audit API Error:", error);
-    return response.status(500).json({ error: error.message });
+    return response.status(500).json({ 
+      error: error.message,
+      stack: error.stack,
+      details: "Check server logs for more info"
+    });
   }
 }

@@ -11,6 +11,9 @@ export default async function handler(
     return response.status(200).json(feed || []);
   } catch (error: any) {
     console.error("Feed API Error:", error);
-    return response.status(200).json([]); // Return empty array instead of 500 to keep UI stable
+    return response.status(500).json({ 
+      error: error.message, 
+      stack: error.stack 
+    });
   }
 }
