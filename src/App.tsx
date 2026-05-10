@@ -314,7 +314,12 @@ const App = () => {
                     <div className="relative group overflow-hidden rounded-3xl p-[1px]">
                       <div className="absolute inset-0 bg-gradient-to-r from-primary via-secondary to-accent animate-border-flow opacity-70" />
                       <div className="relative glass p-8 rounded-3xl flex flex-col items-center justify-center text-center bg-black h-full">
-                        <div className="text-[10px] font-black text-white/30 uppercase mb-4 tracking-[0.3em]">Security Index</div>
+                        <div className="absolute top-4 left-0 right-0 flex justify-center gap-4 text-[8px] font-black text-white/10 uppercase tracking-widest">
+                          <span>0% Danger</span>
+                          <span>•</span>
+                          <span>100% Safe</span>
+                        </div>
+                        <div className="text-[10px] font-black text-white/30 uppercase mb-4 mt-4 tracking-[0.3em]">Security Index</div>
                         <div className={`text-8xl font-black tracking-tighter ${auditResult.safetyScore > 80 ? 'text-success' : auditResult.safetyScore > 50 ? 'text-warning' : 'text-danger'}`}>{auditResult.safetyScore}</div>
                         <div className="text-[9px] font-black mt-6 text-white/40 uppercase tracking-[0.4em]">Powered by Bags AI Intelligence</div>
                       </div>
