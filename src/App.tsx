@@ -10,7 +10,6 @@ import {
   ShieldAlert,
   ExternalLink
 } from 'lucide-react';
-import { Vortex } from './components/ui/vortex';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   AreaChart, 
@@ -184,13 +183,15 @@ const App = () => {
     <div className="min-h-screen font-sans selection:bg-primary/30 text-white bg-black">
       {/* Background */}
       <div className="fixed inset-0 -z-10 overflow-hidden">
-        <Vortex 
-          backgroundColor="black"
-          rangeY={800}
-          particleCount={500}
-          baseHue={220}
-          className="w-full h-full"
-        />
+        <video
+          autoPlay
+          loop
+          muted
+          playsInline
+          className="w-full h-full object-cover opacity-30"
+        >
+          <source src="/bg-vortex.mp4" type="video/mp4" />
+        </video>
         <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-black" />
       </div>
 
