@@ -180,20 +180,22 @@ const App = () => {
   };
 
   return (
-    <div className="min-h-screen font-sans selection:bg-primary/30 text-white bg-black">
+    <div className="min-h-screen font-sans selection:bg-primary/30 text-white relative">
       {/* Background */}
-      <div className="fixed inset-0 -z-10 overflow-hidden">
+      <div className="fixed inset-0 z-0 overflow-hidden bg-black">
         <video
           autoPlay
           loop
           muted
           playsInline
-          className="w-full h-full object-cover opacity-30"
+          className="w-full h-full object-cover opacity-50"
         >
           <source src="/bg-vortex.mp4" type="video/mp4" />
         </video>
         <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-black" />
       </div>
+
+      <div className="relative z-10">
 
       {/* Navigation */}
       <nav className="fixed top-0 w-full z-50 glass border-b-white/5 px-6 py-4">
@@ -466,6 +468,7 @@ const App = () => {
           </div>
         </div>
       </footer>
+      </div>
     </div>
   );
 };
