@@ -5,7 +5,6 @@ import {
   Search, 
   Cpu, 
   CheckCircle2,
-  CheckCircle2,
   Zap,
   AlertTriangle,
   ShieldAlert,
@@ -149,7 +148,6 @@ const App = () => {
       }
     } catch (error: any) {
       console.error("Audit failed:", error);
-      setChatMessages(prev => [...prev, { role: 'ai', content: `AUDIT FAILED: ${error.message}` }]);
     } finally {
       setIsAuditing(false);
       setTimeout(() => {
