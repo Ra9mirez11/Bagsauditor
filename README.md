@@ -1,54 +1,33 @@
-# 🛡️ Bags Auditor Agent
+# Bags Auditor 🛡️
 
-An AI-powered security sentinel for the **Bags ecosystem** on Solana. This agent uses **Claude 3.5 Sonnet** to perform deep-dive security audits, analyze creator fee distributions, and provide real-time risk assessments for Bags creator tokens.
+Autonomous security sentinel for the Bags ecosystem.
 
-![Bags Auditor UI](https://raw.githubusercontent.com/Ra9mirez11/Bagsauditor/main/public/demo.png) *(Note: Add your screenshot here)*
+## Overview
+Bags Auditor is an AI-powered security tool designed for the Bags Hackathon. it provides real-time auditing of creator tokens, fee distributions, and structural risks on the Bags platform.
 
-## 🚀 Features
+## Features
+- **Neural Audit Index**: 0-100 safety score powered by Neural Intelligence.
+- **Fee Network Analytics**: Real-time tracking of the 1% Bags creator fee.
+- **Creator Trust Analysis**: Verification of admin centralization and royalty traps.
+- **Live Launch Feed**: Monitor new Bags tokens as they happen.
 
-- **AI Security Audit**: Real-time analysis of token contracts and social dynamics via Claude AI.
-- **Bags API Integration**: Direct data fetching from the Bags REST API and TypeScript SDK.
-- **Fee Visualization**: Monitor the 1% creator fee and lifetime revenue metrics.
-- **Premium Design**: Built with React, Tailwind CSS, and Framer Motion for a stunning "Glassmorphism" experience.
-- **Autonomous Ready**: Architectural foundation for deploying autonomous trading and management agents.
+## Tech Stack
+- **Frontend**: React, Vite, Tailwind CSS, Framer Motion, Recharts.
+- **Backend**: Vercel Serverless Functions (Node.js).
+- **Integrations**: Bags API V2, Solana Web3.js, OpenRouter AI.
 
-## 🛠️ Tech Stack
+## Submission Details
+- **Site**: [https://bagsauditor.vercel.app/](https://bagsauditor.vercel.app/)
+- **GitHub**: [https://github.com/Ra9mirez11/Bagsauditor](https://github.com/Ra9mirez11/Bagsauditor)
 
-- **Frontend**: React (Vite) + TypeScript
-- **Styling**: Tailwind CSS v4 + Framer Motion
-- **Backend**: Vercel Serverless Functions (Node.js)
-- **AI**: Claude 3.5 Sonnet (Anthropic SDK)
-- **Blockchain**: @bagsfm/bags-sdk + @solana/web3.js
-
-## 📦 Installation
-
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/Ra9mirez11/Bagsauditor.git
-   cd Bagsauditor
-   ```
-
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
-
-3. Set up environment variables:
-   Create a `.env` file (for Vercel deployment, set these in the dashboard):
-   ```env
-   ANTHROPIC_API_KEY=your_claude_key
-   BAGS_API_KEY=your_bags_key
-   SOLANA_RPC_URL=your_rpc_url
-   ```
-
-4. Run locally:
-   ```bash
-   npm run dev
-   ```
-
-## 🏆 Hackathon Submission
-
-This project was built for **The Bags Hackathon** (DoraHacks) to showcase the intersection of AI Agents, Social Finance, and Solana Security.
+## Setup
+1. Clone the repo
+2. `npm install`
+3. Add environment variables:
+   - `OPENROUTER_API_KEY`
+   - `BAGS_API_KEY` (Optional)
+   - `SOLANA_RPC_URL` (Optional)
+4. `npm run dev`
 
 ---
-Built with ❤️ by [Bohumel] & Antigravity AI
+Built for the Bags Hackathon 2026.
