@@ -1,5 +1,6 @@
 import { VercelRequest, VercelResponse } from '@vercel/node';
 import { BagsService } from '../src/services/bags';
+import { OpenRouter } from "@openrouter/sdk";
 
 export default async function handler(
   request: VercelRequest,
@@ -26,37 +27,24 @@ export default async function handler(
     const tokenData = await bagsService.auditToken(token_mint);
     const claimEvents = await bagsService.getClaimEvents(token_mint);
 
-    // 2. Call Claude AI via OpenRouter fetch
-    const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-        "HTTP-Referer": "https://bagsauditor.vercel.app",
-        "X-Title": "Bags Auditor Sentinel"
-      },
-      body: JSON.stringify({
-        model: "nvidia/nemotron-3-super-120b-a12b:free",
-        messages: [
-          {
-            role: 'user',
-            content: `You are a security auditor for the Bags ecosystem on Solana. 
-            Analyze this token data and provide 3 concise security insights:
-            ${JSON.stringify(tokenData)}
-            
-            Return ONLY a JSON object: { "insights": ["...", "...", "..."], "recommendation": "SAFE" | "CAUTION" | "DANGER" }`
-          }
-        ]
-      })
+    // 2. Call Claude AI via OpenRouter SDK
+    const openrouter = new OpenRouter({ apiKey });
+    
+    const result = await openrouter.chat.send({
+      model: "nvidia/nemotron-3-super-120b-a12b:free",
+      messages: [
+        {
+          role: 'user',
+          content: `You are a security auditor for the Bags ecosystem on Solana. 
+          Analyze this token data and provide 3 concise security insights:
+          ${JSON.stringify(tokenData)}
+          
+          Return ONLY a JSON object: { "insights": ["...", "...", "..."], "recommendation": "SAFE" | "CAUTION" | "DANGER" }`
+        }
+      ]
     });
 
-    if (!res.ok) {
-      const errorText = await res.text();
-      throw new Error(`OpenRouter audit error: ${res.status} ${errorText}`);
-    }
-
-    const aiData = await res.json();
-    const content = aiData.choices?.[0]?.message?.content || '{}';
+    const content = result.choices?.[0]?.message?.content || '{}';
     
     let aiAnalysis;
     try {

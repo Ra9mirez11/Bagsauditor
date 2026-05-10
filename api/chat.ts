@@ -1,4 +1,5 @@
 import { VercelRequest, VercelResponse } from '@vercel/node';
+import { OpenRouter } from "@openrouter/sdk";
 
 export default async function handler(
   request: VercelRequest,
@@ -16,39 +17,23 @@ export default async function handler(
   }
 
   try {
-    const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-        "HTTP-Referer": "https://bagsauditor.vercel.app",
-        "X-Title": "Bags Auditor Sentinel"
-      },
-      body: JSON.stringify({
-        model: "nvidia/nemotron-3-super-120b-a12b:free",
-        messages: [
-          {
-            role: 'system',
-            content: `You are a security auditor expert for the Bags ecosystem on Solana. 
-            Context: ${JSON.stringify(context)}.
-            Focus on security risks, fee distribution, and creator trust.`
-          },
-          {
-            role: 'user',
-            content: message
-          }
-        ]
-      })
+    const openrouter = new OpenRouter({ apiKey });
+    
+    const result = await openrouter.chat.send({
+      model: "nvidia/nemotron-3-super-120b-a12b:free",
+      messages: [
+        {
+          role: 'user',
+          content: `You are a security auditor expert for the Bags ecosystem on Solana. 
+          Context: ${JSON.stringify(context)}.
+          Focus on security risks, fee distribution, and creator trust.
+          
+          User's message: ${message}`
+        }
+      ]
     });
 
-    if (!res.ok) {
-      const errorText = await res.text();
-      throw new Error(`OpenRouter error: ${res.status} ${errorText}`);
-    }
-
-    const data = await res.json();
-    const reply = data.choices?.[0]?.message?.content || 'I cannot answer that right now.';
-
+    const reply = result.choices?.[0]?.message?.content || 'I cannot answer that right now.';
     return response.status(200).json({ reply });
   } catch (error: any) {
     console.error("Chat API Error:", error);
